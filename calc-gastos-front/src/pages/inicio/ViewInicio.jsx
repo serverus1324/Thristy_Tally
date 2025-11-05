@@ -8,10 +8,10 @@ const ViewInicio = () => {
                     {/* Encabezado */}
                     <div className="text-center mb-5">
                         <h1 className="fw-bold text-primary display-4 mb-3">
-                            ¡Bienvenido a tu calculadora de gastos universitarios!
+                            ¡Tu compañero financiero universitario
                         </h1>
                         <p className="fw-semibold text-secondary fs-5 w-75 mx-auto">
-                            Descubre una herramienta diseñada específicamente para estudiantes universitarios, que te permitirá organizar y administrar tus gastos de manera eficiente. Con nuestra calculadora, podrás categorizar tus ingresos y egresos, planificar presupuestos mensuales, y tomar decisiones financieras más inteligentes para ahorrar tiempo y dinero mientras te concentras en tus estudios.
+                            Una herramienta diseñada para estudiantes universitarios que te ayuda a organizar tus necesidades, planificar tu presupuesto y tomar decisiones financieras más inteligentes para que puedas enfocarte en tus estudios.
                         </p>
                     </div>
 

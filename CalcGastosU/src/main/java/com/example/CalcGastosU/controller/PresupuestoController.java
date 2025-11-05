@@ -49,6 +49,34 @@ public class PresupuestoController {
         }
     }
 
+    @GetMapping("/por-estudiante-periodo")
+    public ResponseEntity<?> getByEstudiantePeriodo(
+            @RequestParam("idEstudiante") String idEstudiante,
+            @RequestParam("idPeriodo") String idPeriodo) {
+        try {
+            if (!ObjectId.isValid(idEstudiante) || !ObjectId.isValid(idPeriodo)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "mensaje", "Formato de idEstudiante o idPeriodo inválido"));
+            }
+            Optional<Presupuesto> presupuesto = presupuestoService
+                    .findByIdEstudianteAndIdPeriodo(new ObjectId(idEstudiante), new ObjectId(idPeriodo));
+            if (presupuesto.isPresent()) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "data", presupuesto.get(),
+                        "mensaje", "Presupuesto obtenido exitosamente"));
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "success", false,
+                    "mensaje", "Presupuesto no encontrado para estudiante y período"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "mensaje", "Error al consultar presupuesto: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}/excedido")
     public ResponseEntity<?> presupuestoExcedido(@PathVariable ObjectId id) {
         boolean excedido = presupuestoService.presupuestoExcedido(id);

@@ -21,7 +21,9 @@ const ViewLogin = () => {
             const response = await postData ('usuarios/login', body); // La ruta debe coincidir con la de Spring
             const idEstudiante = response.idEstudiante;
             console.log(("response login: ", response))
-        
+            // Persistir sesión con el ID real del estudiante
+            try { localStorage.setItem('idEstudiante', String(idEstudiante)); } catch {}
+
             toast.success('Inicio de sesión exitoso');
             setTimeout(() => {
                 navigate('/home', { state: { idEstudiante } });

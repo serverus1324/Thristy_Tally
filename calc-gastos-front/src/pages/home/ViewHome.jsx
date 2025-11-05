@@ -6,7 +6,12 @@ import Navbar from '../../components/navbar/Navbar';
 const ViewHome = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [idEstudiante, setIdEstudiante] = useState(location.state?.idEstudiante || -2);
+    const [idEstudiante, setIdEstudiante] = useState(() => {
+        const fromState = location.state?.idEstudiante;
+        let fromStorage = null;
+        try { fromStorage = localStorage.getItem('idEstudiante'); } catch {}
+        return fromState ?? fromStorage ?? null;
+    });
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,7 +31,7 @@ const ViewHome = () => {
             }
         };
 
-        if (idEstudiante) {
+        if (idEstudiante && idEstudiante !== -2 && idEstudiante !== '-2') {
             fetchUserData();
         }
     }, [idEstudiante]);
@@ -36,7 +41,12 @@ const ViewHome = () => {
     }
 
     if (error) {
-        return <div className="text-center mt-5 text-danger">{error}</div>;
+        return (
+            <div className="text-center mt-5">
+                <div className="text-danger mb-3">{error}</div>
+                <button className="btn btn-primary" onClick={() => navigate('/login')}>Ir a iniciar sesión</button>
+            </div>
+        );
     }
 
     const toDashboard = () => {
@@ -44,12 +54,16 @@ const ViewHome = () => {
     }
 
     const toCreateGasto = () => {
-        navigate('/crear-gasto', { state: { userData } });
+        const idE = userData?.data?.idEstudiante;
+        if (idE) {
+            try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
+        }
+        navigate('/crear-gasto');
     }
 
     return (
         <>
-            <Navbar userName={userData?.nombre} /> {/* Modificado para acceder al nombre directamente */}
+            <Navbar userName={userData?.data || { nombre: '' }} />
             <div className="container mt-5">
                 <h1 className="text-primary text-center">Bienvenido de nuevo</h1>
                 {userData ? (
@@ -67,7 +81,7 @@ const ViewHome = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="text-center mt-4">No se encontró información del usuario.</div>
+                    <div className="text-center mt-4">No se encontró información del usuario. Por favor, inicia sesión o vuelve desde el formulario.</div>
                 )}
             </div>
         </>

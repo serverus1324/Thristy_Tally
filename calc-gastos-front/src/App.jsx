@@ -8,6 +8,8 @@ import ViewHome from './pages/home/ViewHome';
 import ViewInicio from './pages/inicio/ViewInicio';
 import ViewLogin from './pages/login/ViewLogin';
 import ViewSignup from './pages/signup/ViewSignup';
+import EditarPresupuesto from './pages/presupuesto/EditarPresupuesto';
+import ViewEditarDatos from './pages/usuario/ViewEditarDatos';
 
 function App() {
     return (
@@ -20,7 +22,9 @@ function App() {
                     <Route path="/home" element={<ViewHome />} />
                     <Route path="/dashboard" element={<ViewDashboard />} />
                     <Route path="/necesidad-presupuesto" element={<ViewNecesidadPresupuesto />} /> 
-                    <Route path="/editar-datos" element={<ViewNecesidadPresupuesto />} /> {/* Usa el componente unificado */}
+                    <Route path="/presupuesto/:id/editar" element={<EditarPresupuesto />} />
+                    <Route path="/crear-gasto" element={<ViewNecesidadPresupuesto />} />
+                    <Route path="/editar-datos" element={<ViewEditarDatos />} />
                 </Routes>
             </div>
         </>

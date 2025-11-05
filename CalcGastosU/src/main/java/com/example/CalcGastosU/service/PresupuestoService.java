@@ -40,6 +40,10 @@ public class PresupuestoService {
         return presupuestoRepository.findById(id);
     }
 
+    public Optional<Presupuesto> findByIdEstudianteAndIdPeriodo(ObjectId idEstudiante, ObjectId idPeriodo) {
+        return presupuestoRepository.findByIdEstudianteAndIdPeriodo(idEstudiante, idPeriodo);
+    }
+
     public Presupuesto save(PresupuestoDTO dto) {
         Estudiante estudiante = (Estudiante) estudianteRepository.findById(dto.getIdEstudiante())
                 .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));

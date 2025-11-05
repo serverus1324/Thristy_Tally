@@ -40,11 +40,12 @@ const GastosTable = ({ gastos }) => {
 
     const deleteNecesidad = async (idNecesidad) => {
         try {
-            await deleteData(`api/v1/necesidades/${idNecesidad}`);
+            await deleteData(`necesidades/${idNecesidad}`);
             toast.success("Necesidad eliminada exitosamente.");
             // No es necesario navegar a otra página, simplemente recargar los datos en el componente padre
         } catch (error) {
-            toast.error("Error al eliminar la necesidad: ", error);
+            toast.error("Error al eliminar la necesidad: " + (error?.message || ""));
+            console.error('DELETE necesidades error', error);
         }
     };
 

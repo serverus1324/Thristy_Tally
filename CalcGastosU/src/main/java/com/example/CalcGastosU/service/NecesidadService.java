@@ -100,12 +100,44 @@ public class NecesidadService {
         return necesidadRepository.findByIdEstudianteAndIdPeriodo(idEstudiante, idPeriodo);
     }
 
+    public List<Necesidad> findByIdPresupuesto(ObjectId idPresupuesto) {
+        return necesidadRepository.findByIdPresupuesto(idPresupuesto);
+    }
+
     public Necesidad update(NecesidadDTO dto) {
-        Necesidad necesidad = new Necesidad();
-        necesidad.setId(dto.getId());
-        necesidad.setDescripcion(dto.getDescripcion());
-        necesidad.setMonto(dto.getMonto());
-        necesidad.setEsPredeterminada(dto.getEsPredeterminada());
+        if (dto == null || dto.getId() == null) {
+            throw new IllegalArgumentException("Se requiere el ID de la necesidad para actualizar");
+        }
+
+        // Cargar la necesidad existente para preservar relaciones
+        Optional<Necesidad> existenteOpt = necesidadRepository.findById(dto.getId());
+        if (existenteOpt.isEmpty()) {
+            throw new RuntimeException("Necesidad no encontrada para actualizar");
+        }
+
+        Necesidad necesidad = existenteOpt.get();
+
+        // Actualizar solo campos permitidos, preservando relaciones
+        if (dto.getDescripcion() != null) {
+            necesidad.setDescripcion(dto.getDescripcion());
+        }
+        if (dto.getMonto() != null) {
+            necesidad.setMonto(dto.getMonto());
+        }
+        if (dto.getEsPredeterminada() != null) {
+            necesidad.setEsPredeterminada(dto.getEsPredeterminada());
+        }
+
+        // Si se envían referencias explícitas válidas, actualizarlas; de lo contrario, preservarlas
+        if (dto.getIdEstudiante() != null) {
+            necesidad.setIdEstudiante(dto.getIdEstudiante());
+        }
+        if (dto.getIdPeriodo() != null) {
+            necesidad.setIdPeriodo(dto.getIdPeriodo());
+        }
+        if (dto.getIdPresupuesto() != null) {
+            necesidad.setIdPresupuesto(dto.getIdPresupuesto());
+        }
 
         return necesidadRepository.save(necesidad);
     }

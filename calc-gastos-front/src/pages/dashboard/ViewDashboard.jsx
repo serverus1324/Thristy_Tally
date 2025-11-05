@@ -1,30 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getData, deleteData, putData } from '../../api/api';
 
 // CONSTANTES Y FUNCIONES DE APOYO (simuladas/ejemplo)
 // Deberías tener estas definidas en tu proyecto.
 
-// URL base de tu API (reemplaza con la real)
-const API_BASE_URL = 'http://localhost:8081';
-// Función simulada para obtener datos (reemplaza con tu implementación real)
-async function getData(endpoint) {
-try {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`);
-    if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Error en la petición API (${response.status}): ${errorText || response.statusText}`);
-    }
-    // Manejar respuestas vacías que no son JSON válido
-    const textData = await response.text();
-    if (!textData) {
-      return null; // O [], {} según lo que espere el endpoint
-    }
-    return JSON.parse(textData);
-} catch (err) {
-    console.error(`Error en getData para el endpoint ${endpoint}:`, err);
-    throw err; // Re-lanza para que el llamador lo maneje
-}
-}
+// Usamos los helpers compartidos de `src/api/api.js` que ya manejan simulación
 
 // COMPONENTES INTERNOS SIMPLES CON BOOTSTRAP
 
@@ -42,40 +23,85 @@ return (
 );
 };
 
-// Componente Tabla de Gastos/Necesidades simple
-const SimpleGastosTable = ({ gastos }) => {
-if (!gastos || gastos.length === 0) {
+// Componente Tabla de Gastos/Necesidades simple (sin columna ID)
+const SimpleGastosTable = ({ gastos, accionActual, onStartEliminar, onStartAumentar, onConfirmDelete, onCancelAction, onApplyIncrease, onChangeIncreaseValue }) => {
+  if (!gastos || gastos.length === 0) {
     return <p className="text-center text-muted mt-3">No hay necesidades registradas para este período.</p>;
-}
-return (
+  }
+  return (
     <div className="table-responsive">
-<table className="table table-striped table-hover table-bordered">
+      <table className="table table-striped table-hover table-bordered">
         <thead className="table-light">
-        <tr>
-            <th>ID</th>
+          <tr>
             <th>Nombre</th>
             <th>Descripción</th>
             <th>Monto Solicitado</th>
             <th>Estado</th>
-            <th>Prioridad</th>
-            {/* Puedes añadir más columnas según la estructura de tus datos de 'necesidades' */}
-        </tr>
+            <th>Acciones</th>
+          </tr>
         </thead>
         <tbody>
-        {gastos.map((gasto) => (
-            <tr key={gasto.id || gasto.nombre}> {/* Asegura una key única */}
-            <td>{gasto.id || 'N/A'}</td>
-            <td>{gasto.nombre || 'N/A'}</td>
-            <td>{gasto.descripcion || 'N/A'}</td>
-            <td>${gasto.monto? gasto.monto.toFixed(2) : '0.00'}</td>
-            <td>{gasto.estado || 'N/A'}</td>
-            <td>{gasto.prioridad || 'N/A'}</td>
-            </tr>
-        ))}
+          {gastos.map((gasto, idx) => {
+            const nombre = gasto?.nombre || gasto?.descripcion || '—';
+            const descripcion = gasto?.descripcion || gasto?.nombre || '—';
+            const montoBase = gasto?.monto ?? gasto?.montoSolicitado;
+            const monto = montoBase != null ? Number(montoBase).toFixed(2) : '0.00';
+            const estado = typeof gasto?.esPredeterminada === 'number'
+              ? (gasto.esPredeterminada === 1 ? 'Predeterminada' : 'Establecida')
+              : (gasto?.estado || '—');
+            return (
+              <tr key={gasto.id || gasto._id || idx}>
+                <td>{nombre}</td>
+                <td>{descripcion}</td>
+                <td>${monto}</td>
+                <td>{estado}</td>
+                <td className="text-center">
+                  {accionActual && (accionActual.id === (gasto.id || gasto._id)) ? (
+                    accionActual.mode === 'delete' ? (
+                      <div className="d-flex gap-2 justify-content-center">
+                        <button className="btn btn-sm btn-danger" onClick={onConfirmDelete}>Confirmar</button>
+                        <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>Cancelar</button>
+                      </div>
+                    ) : (
+                      <div className="d-flex gap-2 align-items-center justify-content-center">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={accionActual.value ?? ''}
+                          onChange={(e) => onChangeIncreaseValue(e.target.value)}
+                          className="form-control form-control-sm"
+                          style={{ maxWidth: '120px' }}
+                          placeholder="+ monto"
+                        />
+                        <button className="btn btn-sm btn-warning" onClick={onApplyIncrease}>Aplicar</button>
+                        <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>Cancelar</button>
+                      </div>
+                    )
+                  ) : (
+                    <>
+                      <button
+                        className="btn btn-sm btn-danger me-2"
+                        onClick={() => onStartEliminar(gasto)}
+                      >
+                        Eliminar
+                      </button>
+                      <button
+                        className="btn btn-sm btn-warning"
+                        onClick={() => onStartAumentar(gasto)}
+                      >
+                        Aumentar valor
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
-    </table>
+      </table>
     </div>
-);
+  );
 };
 
 // Componente Placeholder para el Gráfico
@@ -83,7 +109,8 @@ const ChartPlaceholder = ({ gastos }) => {
 if (!gastos || gastos.length === 0) {
     return <p className="text-center text-muted">No hay datos suficientes para mostrar en el gráfico.</p>;
 }
-const totalGastado = gastos.reduce((acc, curr) => acc + (Number(curr.montoSolicitado) || 0), 0);
+// Usar 'monto' si existe, de lo contrario 'montoSolicitado'
+const totalGastado = gastos.reduce((acc, curr) => acc + (Number(curr.monto ?? curr.montoSolicitado) || 0), 0);
 return (
     <div className="p-3 border rounded bg-white shadow-sm">
     <h5 className="text-center text-secondary mb-3">Visualización de Datos (Marcador)</h5>
@@ -111,32 +138,36 @@ const [idUsuario, setIdUsuario] = useState(null);
 const [userData, setUserData] = useState(null);
 const [necesidades, setNecesidades] = useState([]);
 const [periodos, setPeriodos] = useState([]);
+const [periodosConPresupuesto, setPeriodosConPresupuesto] = useState([]);
 const [selectedPeriodo, setSelectedPeriodo] = useState('');
 const [resumenPresupuesto, setResumenPresupuesto] = useState(null);
 
   // Estado consolidado para carga y errores
 const [viewStatus, setViewStatus] = useState({ loading: true, error: null });
 
+  // Estado para acciones en fila (eliminar / aumentar)
+  const [accionActual, setAccionActual] = useState(null); // { id, mode: 'delete'|'increase', value?: number, item }
+
   // Efecto para establecer idUsuario de forma segura desde location.state
 useEffect(() => {
-    const userIdFromLocation = location.state?.userData?.data?._id;
-    if (userIdFromLocation) {
-    setIdUsuario(userIdFromLocation);
-    } else {l
-    setViewStatus({ loading: false, error: "No se pudo obtener la información del usuario. Por favor, vuelva a iniciar sesión." });
-      // Opcionalmente, redirigir: navigate('/login');
+    const idFromLocation = location.state?.idEstudiante ?? location.state?.userData?.data?._id;
+    let idFromStorage = null;
+    try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
+    const resolvedId = idFromLocation ?? idFromStorage;
+    if (resolvedId) {
+      setIdUsuario(resolvedId);
+    } else {
+      // No bloquemos con error; permitimos ver el panel básico sin datos
+      setViewStatus({ loading: false, error: null });
     }
 }, [location.state, navigate]);
 
   // Efecto para cargar datos iniciales (usuario y periodos) cuando idUsuario está disponible
 useEffect(() => {
     if (!idUsuario) {
-      // Si idUsuario nunca se va a establecer (ya manejado por el efecto anterior),
-      // asegurar que loading sea false.
-    if (!location.state?.userData?.data?._id) {
-        setViewStatus(prev => ({ ...prev, loading: false, error: prev.error || "ID de usuario no proporcionado."}));
-    }
-    return;
+      // Si no hay idUsuario, salimos y dejamos la vista sin bloquear.
+      setViewStatus(prev => ({ ...prev, loading: false }));
+      return;
     }
 
     setViewStatus({ loading: true, error: null }); // Inicia carga para esta cadena de datos
@@ -146,20 +177,44 @@ useEffect(() => {
     try {
         // Carga de datos de usuario y periodos en paralelo
         const [dataUsuarioResponse, periodosDataResponse] = await Promise.all([
-        getData(`api/v1/estudiantes/${idUsuario}`),
-          getData(`api/v1/periodos`) // Asume que este endpoint devuelve un array de periodos
+          getData(`estudiantes/${idUsuario}`),
+          getData(`periodos/${idUsuario}/por-estudiante`)
         ]);
 
         if (!isActive) return;
 
-        setUserData(dataUsuarioResponse);
-        // const validPeriodos = Array.isArray(periodosDataResponse) ? periodosDataResponse : [];
-        const periodosEst = periodosDataResponse.data.filter(p => p.idEstudiante == idUsuario);
-        setPeriodos(periodosEst);
+        // Aseguramos un userData con nombre en modo demo
+        setUserData(dataUsuarioResponse?.data ? dataUsuarioResponse : { data: { nombre: 'Estudiante Demo' } });
 
-        if (periodosEst.length > 0) {
-        setSelectedPeriodo(periodosEst[0]._id);
+        // Normalizamos periodos según la forma de respuesta
+        const periodosArray = Array.isArray(periodosDataResponse)
+          ? periodosDataResponse
+          : (Array.isArray(periodosDataResponse?.data) ? periodosDataResponse.data : []);
+        setPeriodos(periodosArray);
+
+        // Filtrar períodos que tienen presupuesto
+        const periodosValidos = [];
+        for (const periodo of periodosArray) {
+          const periodoId = periodo._id ?? periodo.id ?? periodo.nombre ?? '';
+          try {
+            await getData(`necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${periodoId}`);
+            periodosValidos.push(periodo);
+          } catch (err) {
+            // Si da 404 "Presupuesto no encontrado", no incluir este período
+            const msg = String(err?.message || '');
+            if (!msg.includes('Presupuesto no encontrado')) {
+              // Si es otro tipo de error, incluir el período de todas formas
+              periodosValidos.push(periodo);
+            }
+          }
+        }
         
+        setPeriodosConPresupuesto(periodosValidos);
+
+        if (periodosValidos.length > 0) {
+          const firstPeriodoId = periodosValidos[0]?._id ?? periodosValidos[0]?.id ?? periodosValidos[0]?.nombre ?? '';
+          setSelectedPeriodo(firstPeriodoId);
+          
           // El estado de carga continuará hasta que los datos del período se carguen (en el siguiente efecto)
         } else {
           setNecesidades([]); // No hay periodos, no habrá necesidades
@@ -190,25 +245,41 @@ useEffect(() => {
     setViewStatus(prev => ({ ...prev, loading: true, error: null })); // Inicia carga para datos del período
     let isActive = true;
 
-    const fetchPeriodData = async () => {
+  const fetchPeriodData = async () => {
     try {
-        const [necesidadesDataResponse, resumenDataResponse] = await Promise.all([
-        getData(`api/v1/necesidades/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`),
-        getData(`api/v1/necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`)
-        ]);
+      // Cargar necesidades
+      const necesidadesDataResponse = await getData(`necesidades/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`);
 
-        if (!isActive) return;
+      if (!isActive) return;
 
-        setNecesidades(Array.isArray(necesidadesDataResponse.data) ? necesidadesDataResponse.data : []);
-        setResumenPresupuesto(resumenDataResponse);
-        setViewStatus({ loading: false, error: null }); // Fin de la carga
+      const necesidadesArray = Array.isArray(necesidadesDataResponse)
+        ? necesidadesDataResponse
+        : (Array.isArray(necesidadesDataResponse?.data) ? necesidadesDataResponse.data : []);
+      setNecesidades(necesidadesArray);
+
+      // Intentar cargar resumen del presupuesto (puede no existir)
+      try {
+        const resumenDataResponse = await getData(`necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`);
+        setResumenPresupuesto(resumenDataResponse?.data ? resumenDataResponse : { data: resumenDataResponse });
+      } catch (errResumen) {
+        // Si el backend indica que no hay presupuesto, no tratamos como error de vista
+        const msg = String(errResumen?.message || '');
+        if (msg.includes('Presupuesto no encontrado')) {
+          setResumenPresupuesto(null);
+        } else {
+          // Otros errores sí se reportan
+          throw errResumen;
+        }
+      }
+
+      setViewStatus({ loading: false, error: null });
     } catch (err) {
-        if (!isActive) return;
-        setViewStatus({ loading: false, error: `Error al cargar datos del período: ${err.message}` });
-        setNecesidades([]); // Limpiar datos en caso de error
-        setResumenPresupuesto(null);
+      if (!isActive) return;
+      setViewStatus({ loading: false, error: `Error al cargar datos del período: ${err.message}` });
+      setNecesidades([]);
+      setResumenPresupuesto(null);
     }
-    };
+  };
 
     fetchPeriodData();
     return () => { isActive = false; }; // Cleanup
@@ -225,10 +296,10 @@ const getNecesidadesCurrentPeriodo = async () => {
       // Opcional: setViewStatus(prev => ({ ...prev, loading: true })); si quieres un indicador específico
     try {
         const necesidadesData = await getData(
-        `api/v1/necesidades/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
         );
         console.log("necesidadesData", necesidadesData)
-        setNecesidades(Array.isArray(necesidadesData) ? necesidadesData : []);
+        setNecesidades(Array.isArray(necesidadesData?.data) ? necesidadesData.data : (Array.isArray(necesidadesData) ? necesidadesData : []));
     } catch (error) {
         // Podrías manejar este error de forma más específica si es necesario
         setViewStatus(prev => ({ ...prev, error: "Error al recargar necesidades: " + error.message }));
@@ -238,50 +309,124 @@ const getNecesidadesCurrentPeriodo = async () => {
     }
 };
 
-  // Función para aumentar el presupuesto
-const aumentarPresupuesto = async () => {
-    if (!resumenPresupuesto || !resumenPresupuesto.data.idPresupuesto) {
-    alert('No se puede aumentar el presupuesto. No hay un presupuesto asignado o falta su ID.');
-    return;
-    }
-
-    const nuevoMontoStr = prompt('Ingrese el nuevo monto total del presupuesto:');
-    if (nuevoMontoStr === null || nuevoMontoStr.trim() === "") {
-      return; // Usuario canceló o no ingresó nada
-    }
-
-    const montoDouble = parseFloat(nuevoMontoStr);
-    if (isNaN(montoDouble) || montoDouble <= 0) {
-    alert('Monto no válido. Por favor, ingrese un número positivo.');
-    return;
-    }
-
+// Refrescar resumen del presupuesto del período actual
+const getResumenPresupuestoCurrentPeriodo = async () => {
+  if (selectedPeriodo && idUsuario) {
     try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/presupuestos/${resumenPresupuesto.data.idPresupuesto}/monto?nuevoMonto=${montoDouble}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' }, // Buena práctica
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error al aumentar el presupuesto (${response.status}): ${errorText}`);
-    }
-
-    alert('Presupuesto aumentado exitosamente');
-
-      // Recargar resumen del presupuesto y necesidades
-      setViewStatus(prev => ({ ...prev, loading: true})); // Indicar carga
-    const resumenActualizado = await getData(
-        `api/v1/necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
-    );
-    setResumenPresupuesto(resumenActualizado);
-      await getNecesidadesCurrentPeriodo(); // Recargar tabla de necesidades
-    setViewStatus(prev => ({ ...prev, loading: false}));
-
+      const resumenData = await getData(`necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`);
+      setResumenPresupuesto(resumenData?.data ? resumenData : { data: resumenData });
     } catch (error) {
-    setViewStatus(prev => ({ ...prev, loading: false, error: 'Error al aumentar el presupuesto: ' + error.message }));
-    alert('Error al aumentar el presupuesto: ' + error.message);
+      const msg = String(error?.message || '');
+      if (msg.includes('Presupuesto no encontrado')) {
+        // No hay presupuesto para este período; ocultar el resumen sin marcar error global
+        setResumenPresupuesto(null);
+      } else {
+        setViewStatus(prev => ({ ...prev, error: "Error al recargar resumen: " + error.message }));
+      }
     }
+  }
+};
+
+  // Eliminar necesidad desde el Dashboard
+  const startEliminar = (necesidad) => {
+    const id = necesidad.id || necesidad._id;
+    if (!id) return;
+    setAccionActual({ id, mode: 'delete', item: necesidad });
+  };
+
+  const confirmarEliminar = async () => {
+    if (!accionActual?.id) return;
+    try {
+      await deleteData(`necesidades/${accionActual.id}`);
+      // Refrescar datos y resumen del período
+      await getNecesidadesCurrentPeriodo();
+      await getResumenPresupuestoCurrentPeriodo();
+    } catch (e) {
+      alert('Error al eliminar necesidad: ' + (e?.message || ''));
+    } finally {
+      setAccionActual(null);
+    }
+  };
+
+  // Aumentar monto de necesidad
+  const startAumentar = (necesidad) => {
+    const id = necesidad.id || necesidad._id;
+    if (!id) return;
+    setAccionActual({ id, mode: 'increase', value: '', item: necesidad });
+  };
+
+  const changeIncreaseValue = (val) => {
+    setAccionActual(prev => ({ ...prev, value: val }));
+  };
+
+  const applyIncrease = async () => {
+    if (!accionActual?.id) return;
+    const incremento = Number(accionActual.value);
+    if (Number.isNaN(incremento) || incremento <= 0) {
+      alert('Valor inválido. Ingrese un número mayor a 0.');
+      return;
+    }
+    const necesidad = accionActual.item;
+    const id = necesidad.id || necesidad._id;
+    const montoActual = Number(necesidad.monto ?? necesidad.montoSolicitado ?? 0);
+    const nuevoMonto = montoActual + incremento;
+    try {
+      // Asegurar referencias consistentes (idEstudiante, idPeriodo, idPresupuesto)
+      let idEst = necesidad.idEstudiante || idUsuario || null;
+      let idPer = necesidad.idPeriodo || selectedPeriodo || null;
+      let idPres = necesidad.idPresupuesto || null;
+
+      if (!idPres && idEst && idPer) {
+        // Obtener el presupuesto del período actual si falta la referencia
+        const presupuestoResp = await getData(`presupuestos/por-estudiante-periodo?idEstudiante=${idEst}&idPeriodo=${idPer}`);
+        const p = presupuestoResp?.data || presupuestoResp;
+        idPres = p?.id || p?._id || null;
+      }
+
+      const dto = {
+        id: id,
+        descripcion: necesidad.descripcion || necesidad.nombre || '',
+        monto: nuevoMonto,
+        esPredeterminada: typeof necesidad.esPredeterminada === 'number'
+          ? necesidad.esPredeterminada
+          : (necesidad.esPredeterminada ? 1 : 0),
+        idEstudiante: idEst,
+        idPeriodo: idPer,
+        idPresupuesto: idPres
+      };
+
+      await putData('necesidades', dto);
+      await getNecesidadesCurrentPeriodo();
+      await getResumenPresupuestoCurrentPeriodo();
+    } catch (e) {
+      alert('Error al actualizar el monto: ' + (e?.message || ''));
+      console.error('PUT necesidades error', e);
+    } finally {
+      setAccionActual(null);
+    }
+  };
+
+  const cancelAction = () => setAccionActual(null);
+
+// Función para editar el presupuesto desde el resumen
+const aumentarPresupuesto = async () => {
+  try {
+    if (!idUsuario || !selectedPeriodo) {
+      alert('Seleccione un período para editar el presupuesto.');
+      return;
+    }
+    const presupuestoResp = await getData(`presupuestos/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`);
+    const p = presupuestoResp?.data || presupuestoResp;
+    const presupuestoId = p?.id || p?._id;
+    if (!presupuestoId) {
+      alert('No se encontró el presupuesto del período seleccionado.');
+      return;
+    }
+    navigate(`/presupuesto/${presupuestoId}/editar`);
+  } catch (e) {
+    setViewStatus(prev => ({ ...prev, error: 'Error al abrir edición de presupuesto: ' + e.message }));
+    alert('No fue posible abrir la edición de presupuesto.');
+  }
 };
 
   // Renderizado condicional para estados de carga y error
@@ -328,6 +473,14 @@ return (
     <>
     <SimpleNavbar userName={userData?.data?.nombre} />
     <div className="container mt-4 mb-5">
+        <div className="d-flex justify-content-end mb-3">
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => navigate('/home', { state: { idEstudiante: idUsuario } })}
+          >
+            Ir al Home
+          </button>
+        </div>
         <header className="text-center mb-4">
         <h1 className="display-5 text-primary">Panel de Control Financiero</h1>
         {userData && <p className="lead text-muted">Bienvenido/a, {userData.data?.nombre} {userData.data?.apellido || ''}</p>}
@@ -336,7 +489,7 @@ return (
         {/* Selector de Periodo */}
         <section className="mb-4 p-3 border rounded bg-light shadow-sm">
         <h2 className='mb-3 h5 text-primary'>Seleccionar Período Académico</h2>
-        {periodos.length > 0 ? (
+        {periodosConPresupuesto.length > 0 ? (
             <select
             className="form-select form-select-lg"
             value={selectedPeriodo}
@@ -344,14 +497,26 @@ return (
             aria-label="Selector de período"
             >
             <option value="" disabled>-- Seleccione un período --</option>
-            {periodos.map((periodo) => (
-                <option key={periodo._id} value={periodo._id}>
-                  {periodo._id} {/* LUEGO CAMBIAR POR NOMBRE CUANDO TENGA */}
+            {periodosConPresupuesto.map((periodo) => {
+              const val = periodo._id ?? periodo.id ?? periodo.nombre;
+              const label = periodo.nombre ?? periodo._id ?? periodo.id;
+              return (
+                <option key={String(val)} value={String(val)}>
+                  {String(label)}
                 </option>
-            ))}
+              );
+            })}
             </select>
         ) : (
-            <p className="text-muted">No hay períodos disponibles para seleccionar.</p>
+            <div className="text-center">
+              <p className="text-muted mb-3">No hay períodos con presupuesto disponibles.</p>
+              <button
+                className="btn btn-success"
+                onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario: idUsuario } })}
+              >
+                Crear Primer Presupuesto
+              </button>
+            </div>
         )}
         </section>
 
@@ -408,6 +573,24 @@ return (
             </div>
         </section>
         )}
+        {selectedPeriodo && !resumenPresupuesto && (
+        <section className="card mb-4 shadow-sm">
+          <div className="card-body">
+            <p className="mb-2 text-muted">No hay presupuesto asociado para este período.</p>
+            <div className="d-flex gap-2">
+              <button onClick={aumentarPresupuesto} className="btn btn-outline-primary">
+                Buscar/Editar Presupuesto del Período
+              </button>
+              <button
+                className="btn btn-success"
+                onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario: idUsuario, selectedPeriodo: selectedPeriodo } })}
+              >
+                Crear Presupuesto
+              </button>
+            </div>
+          </div>
+        </section>
+        )}
         {!selectedPeriodo && idUsuario && <p className="text-center text-info mt-3">Por favor, seleccione un período para ver el resumen del presupuesto y las necesidades asociadas.</p>}
 
         {/* Tabla de Necesidades y Gráfico (si hay período seleccionado) */}
@@ -416,7 +599,16 @@ return (
             <section className="mb-5">
             <h2 className="text-center text-primary my-4">Mis Necesidades Registradas</h2>
             <div className="shadow-sm border rounded p-3 bg-white">
-                <SimpleGastosTable gastos={necesidades} />
+                <SimpleGastosTable
+                  gastos={necesidades}
+                  accionActual={accionActual}
+                  onStartEliminar={startEliminar}
+                  onStartAumentar={startAumentar}
+                  onConfirmDelete={confirmarEliminar}
+                  onCancelAction={cancelAction}
+                  onApplyIncrease={applyIncrease}
+                  onChangeIncreaseValue={changeIncreaseValue}
+                />
             </div>
             </section>
 
@@ -434,7 +626,7 @@ return (
         <button
             className="btn btn-success btn-lg shadow"
             onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario: idUsuario, selectedPeriodo: selectedPeriodo } })}
-            disabled={!idUsuario || !selectedPeriodo || viewStatus.loading}
+            disabled={!idUsuario || viewStatus.loading}
         >
             <i className="bi bi-plus-lg me-2"></i>Registrar Nueva Necesidad
         </button>
@@ -444,11 +636,16 @@ return (
         >
             <i className="bi bi-plus-lg me-2"></i>Analisis De Datos PowerBi
         </a>
-        {(!idUsuario || !selectedPeriodo) &&
+        {!idUsuario && (
             <p className="form-text text-muted mt-2">
-                { !idUsuario ? "Debe iniciar sesión para registrar necesidades." : "Debe seleccionar un período para registrar una necesidad."}
+                Debe iniciar sesión para registrar necesidades.
             </p>
-        }
+        )}
+        {idUsuario && !selectedPeriodo && (
+            <p className="form-text text-muted mt-2">
+                No has seleccionado un período. Puedes crear uno al continuar.
+            </p>
+        )}
         </div>
     </div>
     </>

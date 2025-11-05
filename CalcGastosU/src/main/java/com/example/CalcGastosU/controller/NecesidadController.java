@@ -120,6 +120,26 @@ public class NecesidadController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/por-presupuesto")
+    public ResponseEntity<?> findByIdPresupuesto(@RequestParam("idPresupuesto") String idPresupuesto) {
+        try {
+            if (!ObjectId.isValid(idPresupuesto)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "mensaje", "Formato de idPresupuesto inválido"));
+            }
+            List<Necesidad> necesidades = necesidadService.findByIdPresupuesto(new ObjectId(idPresupuesto));
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", necesidades,
+                    "mensaje", "Necesidades por presupuesto obtenidas exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "mensaje", "Error al consultar necesidades por presupuesto: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/crear-con-validacion")
     public ResponseEntity<?> crearConValidacionPresupuesto(@RequestBody NecesidadDTO dto) {
         try {
