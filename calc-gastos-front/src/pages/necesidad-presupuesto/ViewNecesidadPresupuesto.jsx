@@ -7,36 +7,75 @@ import { useNavigate, useLocation } from "react-router-dom";
 const ViewNecesidadPresupuesto = ({ idUsuario }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Asegura que trabajamos siempre con el ObjectId del estudiante
-  const idEstudiante = (() => {
-    // Priorizar ID desde state de navegación (diversas claves posibles)
+  // Resolver de forma robusta el ID del estudiante desde diferentes fuentes
+  const normalizeId = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') {
+      const s = val.trim();
+      if (s === 'null' || s === 'undefined' || s === 'NaN') return '';
+      // Si viene como JSON con $oid
+      if (s.startsWith('{') && s.endsWith('}')) {
+        try {
+          const obj = JSON.parse(s);
+          const raw = obj.$oid ?? obj.$id ?? obj._id ?? obj.oid ?? obj.id;
+          if (raw) return String(raw).trim();
+        } catch {}
+      }
+      // Extraer 24 hex dentro de la cadena (por ejemplo ObjectId("..."))
+      const matchHex = s.match(/[a-fA-F0-9]{24}/);
+      if (matchHex && matchHex[0]) return matchHex[0];
+      // Extraer números si es numérico
+      const matchNum = s.match(/\d{1,}/);
+      if (matchNum && matchNum[0]) return matchNum[0];
+      return s;
+    }
+    if (typeof val === 'number') return String(val);
+    if (typeof val === 'object') {
+      const raw = val.$oid ?? val.$id ?? val.oid ?? val._id ?? val.id ?? val.data?.idEstudiante ?? val.data?._id;
+      if (!raw) return '';
+      if (typeof raw === 'string' || typeof raw === 'number') return String(raw);
+      if (typeof raw === 'object' && raw?.$oid) return String(raw.$oid);
+      return '';
+    }
+    return '';
+  };
+
+  const isValidId = (v) => typeof v === 'string' && (/^[a-fA-F0-9]{24}$/.test(v) || /^\d+$/.test(v));
+  const storeEstudianteIdIfValid = (v) => {
+    if (isValidId(v)) {
+      try { localStorage.setItem('idEstudiante', String(v)); } catch {}
+    }
+  };
+
+  // Preferir SIEMPRE el ID persistido en login (localStorage), luego state, luego prop
+  let idEstudiante = '';
+  try {
+    const v = localStorage.getItem('idEstudiante');
+    const vNorm = normalizeId(v);
+    if (isValidId(vNorm)) {
+      idEstudiante = vNorm;
+    }
+  } catch { /* ignore */ }
+
+  if (!isValidId(idEstudiante)) {
     const idFromState = location.state?.idEstudiante
       ?? location.state?.idUsuario
       ?? location.state?.userData?.data?.idEstudiante
       ?? location.state?.userData?.data?._id;
-    const candidate = idFromState ?? idUsuario;
+    const idFromStateNorm = normalizeId(idFromState);
+    if (isValidId(idFromStateNorm)) {
+      idEstudiante = idFromStateNorm;
+      storeEstudianteIdIfValid(idEstudiante);
+    }
+  }
 
-    if (candidate) {
-      // Si accidentalmente llega un objeto, intentar extraer id
-      if (typeof candidate === 'object' && candidate !== null) {
-        const extracted = candidate.idEstudiante
-          ?? candidate._id
-          ?? candidate.data?.idEstudiante
-          ?? candidate.data?._id;
-        if (extracted) return String(extracted);
-        // Último recurso: evitar usar "[object Object]"
-        return '';
-      }
-      return String(candidate);
+  if (!isValidId(idEstudiante)) {
+    const vNorm = normalizeId(idUsuario);
+    if (isValidId(vNorm)) {
+      idEstudiante = vNorm;
+      storeEstudianteIdIfValid(idEstudiante);
     }
-    // fallback: localStorage
-    try {
-      const v = localStorage.getItem('idEstudiante');
-      return v ? String(v) : "";
-    } catch {
-      return "";
-    }
-  })();
+  }
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [presupuestos, setPresupuestos] = useState([]);
@@ -82,20 +121,44 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
     const cargarDatos = async () => {
       try {
         setLoading(true);
-        // Cargar presupuestos del estudiante
-        const presupuestosData = await getData(`presupuestos/estudiante/${idEstudiante}`);
-        if (presupuestosData && presupuestosData.data) {
-          setPresupuestos(presupuestosData.data);
+        const resolvedId = idEstudiante;
+        if (!isValidId(resolvedId)) {
+          console.warn('[Crear Gasto] idEstudiante inválido para carga inicial:', idEstudiante);
+          toast.warning('No se pudo identificar al estudiante. Regresa al Home y vuelve a entrar.');
+          return;
+        }
+        // Cargar presupuestos del estudiante (404 = ninguno aún)
+        try {
+          const presupuestosData = await getData(`presupuestos/estudiante/${resolvedId}`);
+          const arr = Array.isArray(presupuestosData?.data) ? presupuestosData.data : (Array.isArray(presupuestosData) ? presupuestosData : []);
+          setPresupuestos(arr);
+        } catch (e) {
+          const msg = String(e?.message || '');
+          if (msg.includes('404')) {
+            setPresupuestos([]);
+          } else {
+            console.error('Error cargando presupuestos:', e);
+            toast.error('Error al cargar presupuestos. Intenta nuevamente.');
+          }
         }
         
-        // Cargar periodos del estudiante
-        const periodosData = await getData(`periodos/${idEstudiante}/por-estudiante`);
-        if (periodosData) {
-          setPeriodos(periodosData);
+        // Cargar periodos del estudiante (si 404, dejar lista vacía)
+        try {
+          const periodosData = await getData(`periodos/${resolvedId}/por-estudiante`);
+          const arr = Array.isArray(periodosData) ? periodosData : (Array.isArray(periodosData?.data) ? periodosData.data : []);
+          setPeriodos(arr);
+        } catch (e) {
+          const msg = String(e?.message || '');
+          if (msg.includes('404')) {
+            setPeriodos([]);
+          } else {
+            console.error('Error cargando periodos:', e);
+            toast.error('Error al cargar períodos. Intenta nuevamente.');
+          }
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
-        toast.error("Error al cargar datos. Por favor, intenta nuevamente.");
+        // Evitar toasts genéricos aquí; ya manejamos cada llamada arriba
       } finally {
         setLoading(false);
       }
@@ -165,12 +228,12 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
 
   // Funciones de navegación
   const irAlDashboard = () => {
-    if (idEstudiante) { try { localStorage.setItem('idEstudiante', String(idEstudiante)); } catch {} }
+    storeEstudianteIdIfValid(idEstudiante);
     navigate('/dashboard', { state: { idEstudiante } });
   };
 
   const irAlHome = () => {
-    if (idEstudiante) { try { localStorage.setItem('idEstudiante', String(idEstudiante)); } catch {} }
+    storeEstudianteIdIfValid(idEstudiante);
     navigate('/home', { state: { idEstudiante } });
   };
   const handleSubmit = async () => {
@@ -180,9 +243,12 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
       let idPresupuestoFinal = presupuestoSeleccionado;
       let idPeriodoFinal = periodoSeleccionado;
 
-      // Validar ID del estudiante (permitir ObjectId o numérico)
-      const isValidId = (v) => typeof v === 'string' && (/^[a-fA-F0-9]{24}$/.test(v) || /^\d+$/.test(v));
-      if (!isValidId(String(idEstudiante))) {
+      // Validar ID del estudiante (permitir ObjectId o numérico) usando resolvedId
+      let resolvedId = idEstudiante;
+      if (!isValidId(resolvedId)) {
+        try { const v = localStorage.getItem('idEstudiante'); const vNorm = normalizeId(v); if (isValidId(vNorm)) { resolvedId = vNorm; } } catch { /* ignore */ }
+      }
+      if (!isValidId(resolvedId)) {
         toast.error("ID de estudiante inválido. Inicia sesión nuevamente.");
         setLoading(false);
         return;
@@ -195,7 +261,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
           nombre: periodo.nombre,
           fechaInicio: periodo.fechaInicio,
           fechaFin: periodo.fechaFin,
-          idEstudiante: idEstudiante,
+          idEstudiante: resolvedId,
         });
         console.log('Respuesta del periodo:', periodoResponse);
         // Backend responde con { success, id }
@@ -213,7 +279,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
         const presupuestoResponse = await postData("presupuestos", {
           descripcion: presupuesto.nombre,
           monto: parseFloat(presupuesto.monto),
-          idEstudiante: idEstudiante,
+          idEstudiante: resolvedId,
           idPeriodo: idPeriodoFinal,
         });
         console.log('Respuesta del presupuesto:', presupuestoResponse);
@@ -262,7 +328,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
           descripcion: n.nombre,
           monto: parseFloat(n.monto),
           esPredeterminada: 1,
-          idEstudiante: idEstudiante,
+          idEstudiante: resolvedId,
           idPeriodo: idPeriodoFinal,
           idPresupuesto: idPresupuestoFinal || null,
         });
@@ -274,7 +340,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
           descripcion: necesidadPersonalizada.nombre,
           monto: parseFloat(necesidadPersonalizada.monto),
           esPredeterminada: 0,
-          idEstudiante: idEstudiante,
+          idEstudiante: resolvedId,
           idPeriodo: idPeriodoFinal,
           idPresupuesto: idPresupuestoFinal || null,
         });
@@ -647,7 +713,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
               Atrás
             </button>
             <button 
-              onClick={handleSubmit} 
+              onClick={() => { console.log('[Crear Gasto] Click en Guardar Todo'); handleSubmit(); }} 
               className="btn btn-success"
               disabled={loading}
             >

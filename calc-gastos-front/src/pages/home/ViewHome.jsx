@@ -54,11 +54,41 @@ const ViewHome = () => {
     }
 
     const toCreateGasto = () => {
-        const idE = userData?.data?.idEstudiante;
+        let idFromStorage = null;
+        try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
+        const idE = (idFromStorage && String(idFromStorage).trim()) || (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : '');
         if (idE) {
             try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
+            // Mantener la misma forma que usa el dashboard: idUsuario
+            navigate('/crear-gasto', { state: { idUsuario: String(idE) } });
+        } else {
+            navigate('/crear-gasto');
         }
-        navigate('/crear-gasto');
+    }
+
+    const toCompareBudgets = () => {
+        let idFromStorage = null;
+        try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
+        const idE = (idFromStorage && String(idFromStorage).trim()) || (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : '');
+        if (idE) {
+            try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
+            navigate('/comparar-presupuestos', { state: { idUsuario: String(idE), idEstudiante: String(idE) } });
+        } else {
+            navigate('/comparar-presupuestos');
+        }
+    }
+
+    const toPrediction = () => {
+        // Navegar al nuevo apartado de predicción
+        let idFromStorage = null;
+        try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
+        const idE = (idFromStorage && String(idFromStorage).trim()) || (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : '');
+        if (idE) {
+            try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
+            navigate('/prediccion-necesidades', { state: { idUsuario: String(idE), idEstudiante: String(idE) } });
+        } else {
+            navigate('/prediccion-necesidades');
+        }
     }
 
     return (
@@ -77,6 +107,14 @@ const ViewHome = () => {
                             <button onClick={toCreateGasto} className="btn btn-lg btn-outline-success d-flex align-items-center justify-content-center gap-2">
                                 <img src="/add.png" alt="Crear Gasto" style={{ width: '24px', height: '24px' }} />
                                 Crear nuevo gasto
+                            </button>
+                            <button onClick={toCompareBudgets} className="btn btn-lg btn-outline-warning d-flex align-items-center justify-content-center gap-2">
+                                <img src="/view.png" alt="Comparar Presupuestos" style={{ width: '24px', height: '24px' }} />
+                                Comparar presupuestos
+                            </button>
+                            <button onClick={toPrediction} className="btn btn-lg btn-outline-info d-flex align-items-center justify-content-center gap-2">
+                                <img src="/view.png" alt="Predicción de necesidades" style={{ width: '24px', height: '24px' }} />
+                                Predicción de necesidades
                             </button>
                         </div>
                     </div>

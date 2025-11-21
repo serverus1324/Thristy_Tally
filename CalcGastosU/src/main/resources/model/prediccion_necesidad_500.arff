@@ -1,0 +1,17 @@
+@relation prediccion_necesidad_500
+
+@attribute gastoNecesidadActual numeric
+@attribute valorAsignadoNecesidad numeric
+@attribute excedenteActual numeric
+@attribute promedioUltimos3Periodos numeric
+@attribute tendenciaGasto numeric
+@attribute presupuestoTotalPeriodo numeric
+@attribute presupuestoRestantePeriodo numeric
+@attribute porcentajeGastoNecesidad numeric
+@attribute porcentajeGastoTotal numeric
+@attribute cantidadNecesidadesCreadas numeric
+@attribute mes {ABRIL,MARZO,JUNIO,OCTUBRE,JULIO,AGOSTO,ENERO,MAYO,FEBRERO,NOVIEMBRE,SEPTIEMBRE,DICIEMBRE}
+@attribute duracionPeriodo numeric
+@attribute necesidadQueExcedio {ALIMENTACION,TRANSPORTE,INESPERADOS,OTROS,MATRICULA,UTILES,ALOJAMIENTO}
+
+@data

@@ -34,10 +34,11 @@ const API_BASE_URL = '/api/v1';
             const data = await response.json();
             return data;
         } catch (error) {
-            console.error('Error al realizar la petición GET:', error.message);
-            if (error.message.includes("Failed to fetch") || 
-                error.message.includes("NetworkError") ||
-                error.message.includes("ERR_CONNECTION_REFUSED")) {
+            // Evitar ruido en consola para 404/Not Found: lo manejarán los llamadores
+            const msg = String(error?.message || '');
+            const isNetwork = msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("ERR_CONNECTION_REFUSED");
+            if (isNetwork) {
+                console.error('Error al realizar la petición GET:', error.message);
                 // Fallback solo en modo sin conexión
                 if (complement.includes("presupuestos")) {
                     return {
@@ -189,4 +190,43 @@ const API_BASE_URL = '/api/v1';
             throw error;
         }
     }
+
+    // ===== Predicción (WEKA J48) =====
+    export async function uploadPredictionDataset(file, { classAttr, classIndex } = {}) {
+        const route = `${API_BASE_URL}/predict/dataset`;
+        const form = new FormData();
+        form.append('file', file);
+        if (classAttr) form.append('classAttr', classAttr);
+        if (typeof classIndex === 'number') form.append('classIndex', String(classIndex));
+        const response = await fetch(route, {
+            method: 'POST',
+            body: form
+        });
+        return handleResponse(response);
+    }
+
+    export async function getPredictionStatus() {
+        const route = `${API_BASE_URL}/predict/status`;
+        const response = await fetch(route, { method: 'GET' });
+        return handleResponse(response);
+    }
+
+    export async function scorePrediction(features) {
+        const route = `${API_BASE_URL}/predict/score`;
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(features)
+        });
+        return handleResponse(response);
+    }
+    
+    // Obtener esquema del modelo para construir formulario dinámico
+    export async function getPredictionSchema() {
+        const route = `${API_BASE_URL}/predict/schema`;
+        const response = await fetch(route, { method: 'GET' });
+        return handleResponse(response);
+    }
+
+    // El modelo se carga automáticamente desde resources en el backend
 

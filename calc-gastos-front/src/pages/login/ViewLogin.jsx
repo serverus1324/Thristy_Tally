@@ -8,6 +8,39 @@ const ViewLogin = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
+    // Normalización robusta del ID de estudiante proveniente del backend
+    const normalizeId = (val) => {
+        if (!val) return '';
+        if (typeof val === 'string') {
+            const s = val.trim();
+            if (s === 'null' || s === 'undefined' || s === 'NaN') return '';
+            // Intentar parsear JSON con $oid
+            if (s.startsWith('{') && s.endsWith('}')) {
+                try {
+                    const obj = JSON.parse(s);
+                    const raw = obj.$oid ?? obj.$id ?? obj._id ?? obj.oid ?? obj.id;
+                    if (raw) return String(raw).trim();
+                } catch {}
+            }
+            // Extraer 24-hex si aparece dentro de la cadena
+            const matchHex = s.match(/[a-fA-F0-9]{24}/);
+            if (matchHex && matchHex[0]) return matchHex[0];
+            // Extraer números si es numérico
+            const matchNum = s.match(/\d{1,}/);
+            if (matchNum && matchNum[0]) return matchNum[0];
+            return s;
+        }
+        if (typeof val === 'number') return String(val);
+        if (typeof val === 'object') {
+            const raw = val?.$oid ?? val?.$id ?? val?._id ?? val?.oid ?? val?.id ?? val?.data?.idEstudiante ?? val?.data?._id;
+            if (!raw) return '';
+            return typeof raw === 'string' || typeof raw === 'number' ? String(raw) : '';
+        }
+        return '';
+    };
+
+    const isValidId = (v) => typeof v === 'string' && (/^[a-fA-F0-9]{24}$/.test(v) || /^\d+$/.test(v));
+
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -19,8 +52,13 @@ const ViewLogin = () => {
         try {
             const body = { username, password };
             const response = await postData ('usuarios/login', body); // La ruta debe coincidir con la de Spring
-            const idEstudiante = response.idEstudiante;
-            console.log(("response login: ", response))
+            console.log('response login:', response);
+            const rawId = response?.idEstudiante ?? response?.data?.idEstudiante ?? response?._id ?? response?.id;
+            const idEstudiante = normalizeId(rawId);
+            if (!isValidId(idEstudiante)) {
+                toast.error('ID de estudiante inválido en login.');
+                return;
+            }
             // Persistir sesión con el ID real del estudiante
             try { localStorage.setItem('idEstudiante', String(idEstudiante)); } catch {}
 

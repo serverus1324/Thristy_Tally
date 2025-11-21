@@ -10,6 +10,10 @@ import ViewLogin from './pages/login/ViewLogin';
 import ViewSignup from './pages/signup/ViewSignup';
 import EditarPresupuesto from './pages/presupuesto/EditarPresupuesto';
 import ViewEditarDatos from './pages/usuario/ViewEditarDatos';
+import CompararPresupuestos from './pages/comparar/CompararPresupuestos';
+import PrediccionNecesidades from './pages/PrediccionNecesidades';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     return (
@@ -23,10 +27,13 @@ function App() {
                     <Route path="/dashboard" element={<ViewDashboard />} />
                     <Route path="/necesidad-presupuesto" element={<ViewNecesidadPresupuesto />} /> 
                     <Route path="/presupuesto/:id/editar" element={<EditarPresupuesto />} />
-                    <Route path="/crear-gasto" element={<ViewNecesidadPresupuesto />} />
-                    <Route path="/editar-datos" element={<ViewEditarDatos />} />
+                <Route path="/crear-gasto" element={<ViewNecesidadPresupuesto />} />
+                <Route path="/editar-datos" element={<ViewEditarDatos />} />
+                <Route path="/comparar-presupuestos" element={<CompararPresupuestos />} />
+                <Route path="/prediccion-necesidades" element={<PrediccionNecesidades />} />
                 </Routes>
             </div>
+            <ToastContainer position="top-right" autoClose={3000} newestOnTop closeOnClick pauseOnFocusLoss={false} />
         </>
     );
 }

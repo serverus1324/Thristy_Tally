@@ -5,19 +5,32 @@ import { Line } from 'react-chartjs-2';
 // Registrar componentes de Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const Chart = ({ gastos }) => {
+const Chart = ({ gastos, highlightLabel }) => {
 
-    // Preparar los datos para Chart.js
-    const labels = gastos.map(g => g.descripcion); // Usa las descripciones de las necesidades como etiquetas
+    // Agregar por categoría (tipo) para mostrar cuál se excede
+    const aggByTipo = gastos.reduce((acc, g) => {
+        const tipo = String(g.tipo || 'OTROS').toUpperCase();
+        const monto = Number(g.monto || 0);
+        acc[tipo] = (acc[tipo] || 0) + (isNaN(monto) ? 0 : monto);
+        return acc;
+    }, {});
+
+    const labels = Object.keys(aggByTipo);
+    const values = labels.map(l => aggByTipo[l]);
+    const pointColors = labels.map(l => l === String(highlightLabel || '').toUpperCase() ? 'rgba(220, 38, 38, 1)' : 'rgba(54, 162, 235, 1)');
+    const pointRadius = labels.map(l => l === String(highlightLabel || '').toUpperCase() ? 6 : 3);
 
     const data = {
         labels,
         datasets: [
             {
-                label: 'Monto', // Etiqueta genérica para el monto de la necesidad
-                data: gastos.map(g => g.monto), // Mapea los montos directamente
-                borderColor: 'rgba(54, 162, 235, 1)', // Color de la línea
-                backgroundColor: 'rgba(54, 162, 235, 0.2)', // Color del área
+                label: 'Monto por categoría',
+                data: values,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                pointBackgroundColor: pointColors,
+                pointRadius,
+                tension: 0.3,
             },
         ],
     };
@@ -30,21 +43,22 @@ const Chart = ({ gastos }) => {
             },
             title: {
                 display: true,
-                text: 'Distribución de Necesidades', // Título más general
+                text: `Distribución por categoría${highlightLabel ? ` (se excede: ${highlightLabel})` : ''}`,
             },
         },
         scales: {
             x: {
                 title: {
                     display: true,
-                    text: 'Necesidad', // Etiqueta del eje X
+                    text: 'Categoría',
                 },
             },
             y: {
                 title: {
                     display: true,
-                    text: 'Monto', // Etiqueta del eje Y
+                    text: 'Monto',
                 },
+                beginAtZero: true,
             },
         },
     };
