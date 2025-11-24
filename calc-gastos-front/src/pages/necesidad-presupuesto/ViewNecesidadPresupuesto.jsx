@@ -109,12 +109,10 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
     { nombre: "OTROS", monto: 0, seleccionado: false },
   ]);
 
-  // Paso 4 - Necesidad personalizada
-  const [necesidadPersonalizada, setNecesidadPersonalizada] = useState({
-    nombre: "",
-    monto: "",
-    porcentajeAumento: "",
-  });
+  // Paso 4 - Necesidades personalizadas (soporta múltiples)
+  const [necesidadesPersonalizadas, setNecesidadesPersonalizadas] = useState([
+    { nombre: "", monto: "", porcentajeAumento: "" }
+  ]);
 
   // Cargar presupuestos y periodos existentes
   useEffect(() => {
@@ -197,11 +195,18 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
     setPeriodo({ ...periodo, [e.target.name]: e.target.value });
   };
 
-  const handleNecesidadPersonalizadaChange = (e) => {
-    setNecesidadPersonalizada({
-      ...necesidadPersonalizada,
-      [e.target.name]: e.target.value,
-    });
+  const handleNecesidadPersonalizadaChange = (index, e) => {
+    const nuevas = [...necesidadesPersonalizadas];
+    nuevas[index] = { ...nuevas[index], [e.target.name]: e.target.value };
+    setNecesidadesPersonalizadas(nuevas);
+  };
+
+  const addNecesidadPersonalizada = () => {
+    setNecesidadesPersonalizadas(prev => [...prev, { nombre: "", monto: "", porcentajeAumento: "" }]);
+  };
+
+  const removeNecesidadPersonalizada = (index) => {
+    setNecesidadesPersonalizadas(prev => prev.filter((_, i) => i !== index));
   };
 
   const toggleNecesidadPredeterminada = (index) => {
@@ -310,8 +315,8 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
       }
 
       // Verificar que al menos una necesidad esté seleccionada
-      const hayNecesidadSeleccionada = necesidadesPredeterminadasValidas.length > 0 || 
-                                      (necesidadPersonalizada.nombre && necesidadPersonalizada.monto);
+      const necesidadesPersonalizadasValidas = necesidadesPersonalizadas.filter(np => np.nombre && Number(np.monto) > 0);
+      const hayNecesidadSeleccionada = necesidadesPredeterminadasValidas.length > 0 || necesidadesPersonalizadasValidas.length > 0;
       
       if (!hayNecesidadSeleccionada) {
         toast.error("Debe seleccionar al menos una necesidad con monto válido");
@@ -319,7 +324,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
         return;
       }
 
-      // 3️⃣ Construir y guardar necesidades seleccionadas y personalizada
+      // 3️⃣ Construir y guardar necesidades seleccionadas y personalizadas
       const necesidadesPayload = [];
       
       // Agregar necesidades predeterminadas válidas
@@ -334,17 +339,17 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
         });
       });
       
-      // Agregar necesidad personalizada si existe
-      if (necesidadPersonalizada.nombre && necesidadPersonalizada.monto) {
+      // Agregar necesidades personalizadas válidas
+      necesidadesPersonalizadasValidas.forEach(np => {
         necesidadesPayload.push({
-          descripcion: necesidadPersonalizada.nombre,
-          monto: parseFloat(necesidadPersonalizada.monto),
+          descripcion: np.nombre,
+          monto: parseFloat(np.monto),
           esPredeterminada: 0,
           idEstudiante: resolvedId,
           idPeriodo: idPeriodoFinal,
           idPresupuesto: idPresupuestoFinal || null,
         });
-      }
+      });
 
       console.log('Payload de necesidades a enviar:', necesidadesPayload);
 
@@ -368,11 +373,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
       setStep(1);
       setPresupuesto({ nombre: "", monto: "" });
       setPeriodo({ nombre: "", fechaInicio: "", fechaFin: "" });
-      setNecesidadPersonalizada({
-        nombre: "",
-        monto: "",
-        porcentajeAumento: "",
-      });
+      setNecesidadesPersonalizadas([{ nombre: "", monto: "", porcentajeAumento: "" }]);
       setNecesidadesPredeterminadas((prev) =>
         prev.map((n) => ({ ...n, seleccionado: false }))
       );
@@ -601,42 +602,54 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
             <div className="col-md-6">
               <div className="card" style={{ borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
                 <div className="card-header" style={{ backgroundColor: "#f8f9fa", borderBottom: "1px solid #e9ecef" }}>
-                  <h5 className="mb-0" style={{ color: "#2c3e50" }}>Agregar Necesidad Personalizada</h5>
+                  <h5 className="mb-0" style={{ color: "#2c3e50" }}>Agregar Necesidades Personalizadas</h5>
                 </div>
                 <div className="card-body">
-                  <div className="mb-3">
-                    <label className="form-label">Nombre de la Necesidad</label>
-                    <input
-                      type="text"
-                      name="nombre"
-                      value={necesidadPersonalizada.nombre}
-                      onChange={handleNecesidadPersonalizadaChange}
-                      className="form-control"
-                      placeholder="Ej: Matrícula universitaria"
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Monto</label>
-                    <input
-                      type="number"
-                      name="monto"
-                      value={necesidadPersonalizada.monto}
-                      onChange={handleNecesidadPersonalizadaChange}
-                      className="form-control"
-                      placeholder="Ej: 50000"
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">% de Aumento (opcional)</label>
-                    <input
-                      type="number"
-                      name="porcentajeAumento"
-                      value={necesidadPersonalizada.porcentajeAumento}
-                      onChange={handleNecesidadPersonalizadaChange}
-                      className="form-control"
-                      placeholder="Ej: 5"
-                    />
-                  </div>
+                  {necesidadesPersonalizadas.map((np, idx) => (
+                    <div key={idx} className="mb-4 p-3 border rounded">
+                      <div className="mb-3">
+                        <label className="form-label">Nombre de la Necesidad</label>
+                        <input
+                          type="text"
+                          name="nombre"
+                          value={np.nombre}
+                          onChange={(e) => handleNecesidadPersonalizadaChange(idx, e)}
+                          className="form-control"
+                          placeholder="Ej: Matrícula universitaria"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Monto</label>
+                        <input
+                          type="number"
+                          name="monto"
+                          value={np.monto}
+                          onChange={(e) => handleNecesidadPersonalizadaChange(idx, e)}
+                          className="form-control"
+                          placeholder="Ej: 50000"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">% de Aumento (opcional)</label>
+                        <input
+                          type="number"
+                          name="porcentajeAumento"
+                          value={np.porcentajeAumento}
+                          onChange={(e) => handleNecesidadPersonalizadaChange(idx, e)}
+                          className="form-control"
+                          placeholder="Ej: 5"
+                        />
+                      </div>
+                      {necesidadesPersonalizadas.length > 1 && (
+                        <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => removeNecesidadPersonalizada(idx)}>
+                          Quitar esta necesidad
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" className="btn btn-outline-primary" onClick={addNecesidadPersonalizada}>
+                    Agregar otra necesidad personalizada
+                  </button>
                 </div>
               </div>
             </div>
@@ -691,19 +704,21 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                 <p className="text-muted">No se seleccionaron necesidades predeterminadas</p>
               )}
               
-              {necesidadPersonalizada.nombre && (
-                <>
-                  <h6 className="mb-3 mt-4">Necesidad Personalizada:</h6>
-                  <div className="card">
-                    <div className="card-body">
-                      <h6 className="card-title">{necesidadPersonalizada.nombre}</h6>
-                      <p className="card-text">Monto: ${parseFloat(necesidadPersonalizada.monto).toLocaleString()}</p>
-                      {necesidadPersonalizada.porcentajeAumento && (
-                        <p className="card-text">% de Aumento: {necesidadPersonalizada.porcentajeAumento}%</p>
-                      )}
-                    </div>
-                  </div>
-                </>
+              <h6 className="mb-3 mt-4">Necesidades Personalizadas:</h6>
+              {necesidadesPersonalizadas.filter(np => np.nombre && Number(np.monto) > 0).length > 0 ? (
+                <ul className="list-group">
+                  {necesidadesPersonalizadas.filter(np => np.nombre && Number(np.monto) > 0).map((np, index) => (
+                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        <div className="fw-semibold">{np.nombre}</div>
+                        {np.porcentajeAumento && <div className="text-muted">% Aumento: {np.porcentajeAumento}%</div>}
+                      </div>
+                      <span className="badge bg-primary rounded-pill">${parseFloat(np.monto).toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted">No se agregaron necesidades personalizadas</p>
               )}
             </div>
           </div>

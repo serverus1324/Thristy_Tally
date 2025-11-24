@@ -3,14 +3,25 @@ import { useNavigate } from 'react-router-dom';
 const Navbar = (userData) => {
     const navigate = useNavigate();
     const usuario = userData.userName;
-    const idUsuario = usuario?.idEstudiante || -1;
+    let idEst = usuario?.idEstudiante || usuario?._id || null;
+    if (!idEst) {
+        try { const fromStorage = localStorage.getItem('idEstudiante'); if (fromStorage) idEst = String(fromStorage); } catch {}
+    }
 
     const goToEdit = () => {
-        navigate('/editar-datos', { state: { idUsuario } });
+        if (idEst) {
+            navigate('/editar-datos', { state: { idEstudiante: String(idEst) } });
+        } else {
+            navigate('/editar-datos');
+        }
     }
 
     const goToLogout = () => {
         navigate('/'); // Redirige a la página de inicio
+    }
+
+    const goToPrediction = () => {
+        navigate('/prediction');
     }
 
     return (
@@ -28,6 +39,12 @@ const Navbar = (userData) => {
                         onClick={goToEdit}
                     >
                         Editar datos
+                    </button>
+                    <button
+                        className="btn btn-outline-success me-2"
+                        onClick={goToPrediction}
+                    >
+                        Predicción
                     </button>
                     <button
                         className="btn btn-danger"

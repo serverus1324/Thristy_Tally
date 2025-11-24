@@ -13,6 +13,12 @@ export default defineConfig({
         // Mantener el prefijo /api/v1 y reenviar al backend
         rewrite: (path) => path.replace(/^\/api\/v1/, '/api/v1'),
       },
+      '/api/prediccion': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/prediccion/, '/api/prediccion'),
+      },
     },
   },
 })

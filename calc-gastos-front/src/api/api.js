@@ -228,5 +228,27 @@ const API_BASE_URL = '/api/v1';
         return handleResponse(response);
     }
 
-    // El modelo se carga automáticamente desde resources en el backend
+    export async function getModeloStatus() {
+        const route = `/api/prediccion/status`;
+        const response = await fetch(route, { method: 'GET' });
+        return handleResponse(response);
+    }
+
+    export async function getModeloSchema() {
+        const route = `/api/prediccion/schema`;
+        const response = await fetch(route, { method: 'GET' });
+        return handleResponse(response);
+    }
+
+    // Integración con backend Spring: POST /api/prediccion/necesidad
+    export async function predictNecesidad(features) {
+        const route = `/api/prediccion/necesidad`;
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(features)
+        });
+        return handleResponse(response);
+    }
+
 

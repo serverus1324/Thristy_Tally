@@ -7,32 +7,40 @@ const ViewEditarDatos = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const resolveIdEstudiante = () => {
-    // Extraer ID desde múltiples fuentes y sanear si llega un objeto
-    const fromState = location.state?.idEstudiante
-      ?? location.state?.idUsuario
-      ?? location.state?.userData?.data?.idEstudiante
-      ?? location.state?.userData?.data?._id;
-    let candidate = fromState;
-    if (!candidate) {
-      try { candidate = localStorage.getItem('idEstudiante'); } catch {}
+  const normalizeId = (val) => {
+    if (!val && val !== 0) return '';
+    if (typeof val === 'object' && val !== null) {
+      const raw = val.$oid ?? val.$id ?? val._id ?? val.id ?? val.idEstudiante ?? val.data?.idEstudiante ?? val.data?._id;
+      return raw ? String(raw).trim() : '';
     }
-    if (!candidate) return '';
-    if (typeof candidate === 'object' && candidate !== null) {
-      const extracted = candidate.idEstudiante
-        ?? candidate._id
-        ?? candidate.data?.idEstudiante
-        ?? candidate.data?._id;
-      return extracted ? String(extracted) : '';
-    }
-    return String(candidate);
+    const s = String(val).trim();
+    if (!s || s === '-1' || s === 'null' || s === 'undefined' || s === 'NaN' || /^\[object.*\]$/.test(s)) return '';
+    const matchHex = s.match(/[a-fA-F0-9]{24}/);
+    if (matchHex && matchHex[0]) return matchHex[0];
+    return s;
   };
 
-  const [idEstudiante] = useState(resolveIdEstudiante());
+  const [idEstudiante, setIdEstudiante] = useState('');
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', username: '', password: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fromState = location.state?.idEstudiante
+      ?? location.state?.idUsuario
+      ?? location.state?.userData?.data?.idEstudiante
+      ?? location.state?.userData?.data?._id;
+    let resolved = normalizeId(fromState);
+    if (!resolved) {
+      try { const ls = localStorage.getItem('idEstudiante'); resolved = normalizeId(ls); } catch {}
+    }
+    setIdEstudiante(resolved);
+    try {
+      if (resolved) localStorage.setItem('idEstudiante', String(resolved));
+      else localStorage.removeItem('idEstudiante');
+    } catch {}
+  }, [location.state]);
 
   useEffect(() => {
     const load = async () => {
