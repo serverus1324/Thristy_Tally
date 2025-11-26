@@ -1,0 +1,276 @@
+.tt-presupuesto-hero {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 600px at 10% 25%, rgba(37, 99, 235, 0.55), transparent 60%),
+    radial-gradient(800px 520px at 86% 78%, rgba(99, 102, 241, 0.48), transparent 62%),
+    linear-gradient(135deg, #0b1220 0%, #101734 55%, #141a3a 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 32px 0 60px;
+}
+
+.tt-presupuesto-hero::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  background-image:
+    radial-gradient(14px 14px at 7% 18%, rgba(255, 215, 110, 0.95), transparent 72%),
+    radial-gradient(18px 18px at 18% 68%, rgba(255, 205, 90, 0.9), transparent 74%),
+    radial-gradient(12px 12px at 33% 30%, rgba(255, 225, 140, 0.95), transparent 70%),
+    radial-gradient(20px 20px at 52% 80%, rgba(255, 200, 80, 0.9), transparent 75%),
+    radial-gradient(16px 16px at 71% 22%, rgba(255, 220, 120, 0.95), transparent 73%),
+    radial-gradient(22px 22px at 86% 55%, rgba(255, 200, 80, 0.9), transparent 76%);
+  opacity: 0.9;
+  filter: blur(0.6px) drop-shadow(0 0 12px rgba(255, 210, 110, 0.85));
+  animation: tt-twinkle 7s ease-in-out infinite;
+}
+
+@keyframes tt-twinkle {
+  0%, 100% { opacity: 0.75; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-5px); }
+}
+
+.tt-presupuesto-stage {
+  width: min(95vw, 1200px);
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 18px;
+}
+
+.tt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #dbeafe;
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.6);
+  padding: 6px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  width: fit-content;
+  margin-bottom: 10px;
+}
+
+.tt-title {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 900;
+  color: white;
+  margin: 0 0 6px;
+}
+
+.tt-subtitle {
+  color: #cbd5e1;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.tt-muted { color: rgba(226, 232, 240, 0.75); }
+
+.tt-presupuesto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tt-presupuesto-header-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tt-card {
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.tt-card-glass {
+  background: rgba(17, 24, 57, 0.7);
+  color: #e2e8f0;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+}
+
+.tt-form-card { padding: 18px; }
+.tt-needs-card { padding: 18px; }
+
+.tt-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 12px;
+}
+
+.tt-form-group { display: grid; gap: 6px; }
+
+.tt-label {
+  font-weight: 800;
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.tt-input {
+  height: 48px;
+  border-radius: 10px;
+  font-weight: 600;
+  background: rgba(11, 18, 32, 0.9);
+  border: 1px solid rgba(148,163,184,0.35);
+  color: #e2e8f0;
+  padding: 0 12px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.tt-input::placeholder { color: rgba(226,232,240,0.55); }
+.tt-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96,165,250,0.14);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.tt-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tt-btn-primary {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 900;
+  font-size: 16px;
+  box-shadow: 0 12px 24px rgba(37,99,235,0.45);
+  transition: transform .12s ease, background .2s ease;
+}
+.tt-btn-primary:hover { transform: translateY(-1px); background: #1d4ed8; }
+
+.tt-btn-outline {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  background: rgba(37,99,235,0.08);
+  color: #fff;
+  font-weight: 800;
+  transition: background .2s, border-color .2s;
+}
+.tt-btn-outline:hover {
+  background: rgba(148, 163, 184, 0.14);
+  border-color: rgba(226, 232, 240, 0.9);
+}
+
+.tt-btn-outline-sm { height: 42px; padding: 0 14px; font-size: 15px; }
+
+.tt-btn-danger {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(248,113,113,0.7);
+  background: rgba(220,38,38,0.18);
+  color: #fecaca;
+  font-weight: 900;
+  transition: background .2s, border-color .2s;
+}
+.tt-btn-danger:hover {
+  background: rgba(220,38,38,0.28);
+  border-color: rgba(248,113,113,1);
+}
+
+.tt-btn-danger-sm { height: 38px; padding: 0 14px; font-size: 14px; }
+
+.tt-btn-success {
+  height: 48px;
+  border-radius: 10px;
+  border: none;
+  background: #22c55e;
+  color: #fff;
+  font-weight: 900;
+  font-size: 16px;
+  transition: transform .12s ease, background .2s ease;
+}
+.tt-btn-success:hover { transform: translateY(-1px); background: #16a34a; }
+
+.tt-loading-inline {
+  margin-top: 10px;
+  font-weight: 800;
+  color: #93c5fd;
+}
+
+.tt-section-head-dark {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.tt-section-head-dark h2 {
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+}
+
+.tt-needs-form {
+  display: grid;
+  grid-template-columns: 1fr 260px 140px;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.tt-needs-list {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.tt-need-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  background: rgba(11, 18, 32, 0.8);
+  border: 1px solid rgba(148,163,184,0.18);
+}
+
+.tt-need-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.tt-need-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 13.5px;
+  color: #cbd5e1;
+  margin-top: 2px;
+}
+
+@media (max-width: 991.98px) {
+  .tt-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .tt-needs-form {
+    grid-template-columns: 1fr;
+  }
+  .tt-presupuesto-header {
+    flex-direction: column;
+  }
+  .tt-presupuesto-header-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .tt-presupuesto-stage { width: 94vw; }
+  .tt-title { font-size: 30px; }
+}

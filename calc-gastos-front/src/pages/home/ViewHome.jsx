@@ -1,129 +1,223 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getData } from '../../api/api';
-import Navbar from '../../components/navbar/Navbar';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getData } from "../../api/api";
+import Navbar from "../../components/navbar/Navbar";
+import "./home.css";
 
 const ViewHome = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const [idEstudiante, setIdEstudiante] = useState(() => {
-        const fromState = location.state?.idEstudiante;
-        let fromStorage = null;
-        try { fromStorage = localStorage.getItem('idEstudiante'); } catch {}
-        return fromState ?? fromStorage ?? null;
-    });
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                // const data = await getData(`estudiantes/${idEstudiante}`);
-                console.log("idEstudiante: ", idEstudiante);
-                const data = await getData(`estudiantes/${idEstudiante}`);
-                console.log("data estudiante: ", data);
-                setUserData(data); // Almacena los datos obtenidos
-            } catch (err) {
-                setError('Error al obtener los datos del usuario.');
-            } finally {
-                setLoading(false);
-            }
-        };
+  const [idEstudiante] = useState(() => {
+    const fromState = location.state?.idEstudiante;
+    let fromStorage = null;
+    try { fromStorage = localStorage.getItem("idEstudiante"); } catch {}
+    return fromState ?? fromStorage ?? null;
+  });
 
-        if (idEstudiante && idEstudiante !== -2 && idEstudiante !== '-2') {
-            fetchUserData();
-        }
-    }, [idEstudiante]);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    if (loading) {
-        return <div className="text-center mt-5">Cargando datos del usuario...</div>;
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const data = await getData(`estudiantes/${idEstudiante}`);
+        setUserData(data);
+      } catch (err) {
+        setError("Error al obtener los datos del usuario.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (idEstudiante && idEstudiante !== -2 && idEstudiante !== "-2") {
+      fetchUserData();
+    } else {
+      setLoading(false);
+      setUserData(null);
     }
+  }, [idEstudiante]);
 
-    if (error) {
-        return (
-            <div className="text-center mt-5">
-                <div className="text-danger mb-3">{error}</div>
-                <button className="btn btn-primary" onClick={() => navigate('/login')}>Ir a iniciar sesión</button>
-            </div>
-        );
-    }
-
-    const toDashboard = () => {
-        navigate('/dashboard', { state: { userData } });
-    }
-
-    const toCreateGasto = () => {
-        let idFromStorage = null;
-        try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
-        const idE = (idFromStorage && String(idFromStorage).trim()) || (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : '');
-        if (idE) {
-            try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
-            // Mantener la misma forma que usa el dashboard: idUsuario
-            navigate('/crear-gasto', { state: { idUsuario: String(idE) } });
-        } else {
-            navigate('/crear-gasto');
-        }
-    }
-
-    const toCompareBudgets = () => {
-        let idFromStorage = null;
-        try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
-        const idE = (idFromStorage && String(idFromStorage).trim()) || (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : '');
-        if (idE) {
-            try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
-            navigate('/comparar-presupuestos', { state: { idUsuario: String(idE), idEstudiante: String(idE) } });
-        } else {
-            navigate('/comparar-presupuestos');
-        }
-    }
-
-    const toPrediction = () => {
-        // Navegar al nuevo apartado de predicción
-        let idFromStorage = null;
-        try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
-        const idE = (idFromStorage && String(idFromStorage).trim()) || (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : '');
-        if (idE) {
-            try { localStorage.setItem('idEstudiante', String(idE)); } catch {}
-            navigate('/prediccion-necesidades', { state: { idUsuario: String(idE), idEstudiante: String(idE) } });
-        } else {
-            navigate('/prediccion-necesidades');
-        }
-    }
-
+  if (loading) {
     return (
-        <>
-            <Navbar userName={userData?.data || { nombre: '' }} />
-            <div className="container mt-5">
-                <h1 className="text-primary text-center">Bienvenido de nuevo</h1>
-                {userData ? (
-                    <div className="mt-4">
-                        <h2 className="text-secondary text-center">¿Qué deseas hacer?</h2>
-                        <div className="d-flex flex-column align-items-center gap-3 mt-5">
-                            <button onClick={toDashboard} className="btn btn-lg btn-outline-primary d-flex align-items-center justify-content-center gap-2">
-                                <img src="/view.png" alt="Ver Gastos" style={{ width: '24px', height: '24px' }} />
-                                Ver gastos creados
-                            </button>
-                            <button onClick={toCreateGasto} className="btn btn-lg btn-outline-success d-flex align-items-center justify-content-center gap-2">
-                                <img src="/add.png" alt="Crear Gasto" style={{ width: '24px', height: '24px' }} />
-                                Crear nuevo gasto
-                            </button>
-                            <button onClick={toCompareBudgets} className="btn btn-lg btn-outline-warning d-flex align-items-center justify-content-center gap-2">
-                                <img src="/view.png" alt="Comparar Presupuestos" style={{ width: '24px', height: '24px' }} />
-                                Comparar presupuestos
-                            </button>
-                            <button onClick={toPrediction} className="btn btn-lg btn-outline-info d-flex align-items-center justify-content-center gap-2">
-                                <img src="/view.png" alt="Predicción de necesidades" style={{ width: '24px', height: '24px' }} />
-                                Predicción de necesidades
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="text-center mt-4">No se encontró información del usuario. Por favor, inicia sesión o vuelve desde el formulario.</div>
-                )}
-            </div>
-        </>
+      <>
+        <header className="home2-nav">
+          <Navbar userName={{ nombre: "" }} />
+        </header>
+
+        <main className="home2-hero">
+          <div className="home2-state">
+            <div className="home2-spinner" />
+            <p>Cargando datos del usuario...</p>
+          </div>
+        </main>
+      </>
     );
+  }
+
+  if (error) {
+    return (
+      <>
+        <header className="home2-nav">
+          <Navbar userName={{ nombre: "" }} />
+        </header>
+
+        <main className="home2-hero">
+          <div className="home2-state">
+            <h3 className="home2-error-title">Ocurrió un problema</h3>
+            <p className="home2-error-text">{error}</p>
+            <button
+              className="btn btn-primary w-100 btn-lg home2-btn"
+              onClick={() => navigate("/login")}
+            >
+              Ir a iniciar sesión
+            </button>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  const getIdE = () => {
+    let idFromStorage = null;
+    try { idFromStorage = localStorage.getItem("idEstudiante"); } catch {}
+    return (
+      (idFromStorage && String(idFromStorage).trim()) ||
+      (userData?.data?.idEstudiante ? String(userData.data.idEstudiante) : "")
+    );
+  };
+
+  const toDashboard = () => {
+    navigate("/dashboard", { state: { userData } });
+  };
+
+  const toCreateGasto = () => {
+    const idE = getIdE();
+    if (idE) {
+      try { localStorage.setItem("idEstudiante", String(idE)); } catch {}
+      navigate("/crear-gasto", { state: { idUsuario: String(idE) } });
+    } else {
+      navigate("/crear-gasto");
+    }
+  };
+
+  const toCompareBudgets = () => {
+    const idE = getIdE();
+    if (idE) {
+      try { localStorage.setItem("idEstudiante", String(idE)); } catch {}
+      navigate("/comparar-presupuestos", {
+        state: { idUsuario: String(idE), idEstudiante: String(idE) },
+      });
+    } else {
+      navigate("/comparar-presupuestos");
+    }
+  };
+
+  const toPrediction = () => {
+    const idE = getIdE();
+    if (idE) {
+      try { localStorage.setItem("idEstudiante", String(idE)); } catch {}
+      navigate("/prediccion-necesidades", {
+        state: { idUsuario: String(idE), idEstudiante: String(idE) },
+      });
+    } else {
+      navigate("/prediccion-necesidades");
+    }
+  };
+
+  const nombre = userData?.data?.nombre ?? "";
+  const userForNavbar = userData?.data ?? { nombre: "" };
+
+  return (
+    <>
+      {/* NAVBAR AISLADA DEL LAYOUT DEL HOME */}
+      <header className="home2-nav">
+        <Navbar userName={userForNavbar} />
+      </header>
+
+      <main className="home2-hero">
+        <div className="home2-stage">
+          <div className="home2-grid">
+
+            {/* Izquierda */}
+            <section className="home2-left">
+              <div className="home2-pill">PANEL PRINCIPAL</div>
+
+              <h1 className="home2-title">
+                Bienvenido de nuevo{nombre ? `, ${nombre}` : ""}
+              </h1>
+
+              <p className="home2-subtitle">
+                Gestiona tu presupuesto universitario de forma simple.
+                Elige una acción para continuar.
+              </p>
+            </section>
+
+            {/* Derecha */}
+            <aside className="home2-right">
+              <div className="home2-quick-card">
+                <h3 className="home2-quick-title">Atajos rápidos</h3>
+                <ul className="home2-quick-list">
+                  <li>Registra un gasto en segundos.</li>
+                  <li>Revisa el historial mensual.</li>
+                  <li>Compara presupuestos y ajusta metas.</li>
+                </ul>
+              </div>
+            </aside>
+
+            {/* Acciones */}
+            <section className="home2-actions">
+              <button className="home2-action-card blue" onClick={toDashboard}>
+                <div className="home2-action-icon">
+                  <img src="/view.png" alt="Ver gastos creados" />
+                </div>
+                <div className="home2-action-text">
+                  <h3>Ver gastos creados</h3>
+                  <p>Consulta tu historial y filtra por mes o categoría.</p>
+                </div>
+                <span className="home2-action-chevron">›</span>
+              </button>
+
+              <button className="home2-action-card teal" onClick={toCreateGasto}>
+                <div className="home2-action-icon">
+                  <img src="/add.png" alt="Crear nuevo gasto" />
+                </div>
+                <div className="home2-action-text">
+                  <h3>Crear nuevo gasto</h3>
+                  <p>Registra rápidamente un gasto para mantener control.</p>
+                </div>
+                <span className="home2-action-chevron">›</span>
+              </button>
+
+              <button className="home2-action-card yellow" onClick={toCompareBudgets}>
+                <div className="home2-action-icon">
+                  <img src="/view.png" alt="Comparar presupuestos" />
+                </div>
+                <div className="home2-action-text">
+                  <h3>Comparar presupuestos</h3>
+                  <p>Evalúa asignado vs. gastado y detecta desbalances.</p>
+                </div>
+                <span className="home2-action-chevron">›</span>
+              </button>
+
+              <button className="home2-action-card blue2" onClick={toPrediction}>
+                <div className="home2-action-icon">
+                  <img src="/view.png" alt="Predicción de necesidades" />
+                </div>
+                <div className="home2-action-text">
+                  <h3>Predicción de necesidades</h3>
+                  <p>Anticipa tus gastos prioritarios con base en tu histórico.</p>
+                </div>
+                <span className="home2-action-chevron">›</span>
+              </button>
+            </section>
+
+          </div>
+        </div>
+      </main>
+    </>
+  );
 };
 
 export default ViewHome;

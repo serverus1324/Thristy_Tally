@@ -1,61 +1,61 @@
-import { useNavigate } from 'react-router-dom';
+// src/components/navbar/Navbar.jsx
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./navbar.css";
 
-const Navbar = (userData) => {
-    const navigate = useNavigate();
-    const usuario = userData.userName;
-    let idEst = usuario?.idEstudiante || usuario?._id || null;
-    if (!idEst) {
-        try { const fromStorage = localStorage.getItem('idEstudiante'); if (fromStorage) idEst = String(fromStorage); } catch {}
-    }
+const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const goToEdit = () => {
-        if (idEst) {
-            navigate('/editar-datos', { state: { idEstudiante: String(idEst) } });
-        } else {
-            navigate('/editar-datos');
-        }
-    }
+  const handleEdit = () => {
+    navigate("/editar-datos", { state: { ...location.state } });
+  };
 
-    const goToLogout = () => {
-        navigate('/'); // Redirige a la página de inicio
-    }
+  const handleHome = () => {
+    navigate("/home", { state: { ...location.state } });
+  };
 
-    const goToPrediction = () => {
-        navigate('/prediction');
-    }
+  const handleLogout = () => {
+    navigate("/login");
+  };
 
-    return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm px-4">
-            <div className="container-fluid">
-                {/* Saludo al usuario */}
-                <span className="navbar-brand fw-bold text-primary">
-                    ¡Hola, {usuario?.nombre}!
-                </span>
+  return (
+    <header className="navbar">
+      <div className="navbar-inner">
+        {/* Marca de la aplicación a la IZQUIERDA */}
+        <div className="navbar-brand">
+          Thrifty <span>Tally</span>
+        </div>
 
-                {/* Botones a la derecha */}
-                <div className="d-flex">
-                    <button
-                        className="btn btn-outline-primary me-2"
-                        onClick={goToEdit}
-                    >
-                        Editar datos
-                    </button>
-                    <button
-                        className="btn btn-outline-success me-2"
-                        onClick={goToPrediction}
-                    >
-                        Predicción
-                    </button>
-                    <button
-                        className="btn btn-danger"
-                        onClick={goToLogout}
-                    >
-                        Cerrar sesión
-                    </button>
-                </div>
-            </div>
-        </nav>
-    );
+        {/* Botones a la DERECHA */}
+        <div className="navbar-right">
+          <button
+            type="button"
+            className="nav-btn nav-btn-outline"
+            onClick={handleEdit}
+          >
+            Editar datos
+          </button>
+
+          <button
+            type="button"
+            className="nav-btn nav-btn-secondary"
+            onClick={handleHome}
+          >
+            Home
+          </button>
+
+          <button
+            type="button"
+            className="nav-btn nav-btn-danger"
+            onClick={handleLogout}
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </header>
+  );
 };
 
 export default Navbar;

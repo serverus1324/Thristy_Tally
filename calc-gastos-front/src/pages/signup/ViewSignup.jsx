@@ -100,7 +100,7 @@ const ViewSignup = () => {
             aria-hidden="true"
           />
 
-          {/* Alcancía (AHORA encima del card, esquina sup. derecha) */}
+          {/* Alcancía */}
           <img
             src="/img/alcancia.png"
             alt=""

@@ -1,14 +1,25 @@
-/* =========================
-   HERO – FONDO OSCURO (Night mode)
-   ========================= */
 .home-hero {
   position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
 
-  /* Fondo oscuro con degradados */
   background:
+ 
+    radial-gradient(8px 8px at 6% 18%, rgba(255, 215, 110, 0.95), transparent 70%),
+    radial-gradient(9px 9px at 16% 35%, rgba(255, 205, 90, 0.90), transparent 72%),
+    radial-gradient(7px 7px at 28% 12%, rgba(255, 225, 140, 0.95), transparent 70%),
+    radial-gradient(10px 10px at 38% 60%, rgba(255, 200, 80, 0.90), transparent 74%),
+    radial-gradient(6px 6px at 50% 22%, rgba(255, 220, 120, 0.95), transparent 72%),
+    radial-gradient(9px 9px at 62% 78%, rgba(255, 200, 80, 0.90), transparent 74%),
+    radial-gradient(7px 7px at 74% 18%, rgba(255, 215, 110, 0.95), transparent 72%),
+    radial-gradient(8px 8px at 82% 55%, rgba(255, 230, 150, 0.95), transparent 70%),
+    radial-gradient(10px 10px at 92% 35%, rgba(255, 205, 90, 0.90), transparent 72%),
+    radial-gradient(6px 6px at 12% 75%, rgba(255, 215, 110, 0.90), transparent 70%),
+    radial-gradient(7px 7px at 44% 88%, rgba(255, 225, 140, 0.90), transparent 70%),
+    radial-gradient(8px 8px at 86% 90%, rgba(255, 220, 120, 0.90), transparent 72%),
+
+  
     radial-gradient(1100px circle at 8% -10%, rgba(19, 100, 255, 0.45) 0%, transparent 60%),
     radial-gradient(900px circle at 110% 5%, rgba(99, 102, 241, 0.45) 0%, transparent 55%),
     linear-gradient(180deg, #050714 0%, #0a0f22 55%, #070b1f 100%);
@@ -17,7 +28,6 @@
   color: #e5e7eb;
 }
 
-/* Manchas de color extra en el fondo */
 .home-hero::before,
 .home-hero::after {
   content: "";
@@ -29,7 +39,6 @@
   z-index: 0;
 }
 
-/* Mancha azul arriba izquierda */
 .home-hero::before {
   width: 520px;
   height: 520px;
@@ -38,7 +47,6 @@
   background: rgba(19, 100, 255, 0.55);
 }
 
-/* Mancha violeta abajo derecha */
 .home-hero::after {
   width: 520px;
   height: 520px;
@@ -47,9 +55,6 @@
   background: rgba(99, 102, 241, 0.55);
 }
 
-/* =========================
-   COLUMNA IZQUIERDA
-   ========================= */
 .home-chip {
   display: inline-block;
   font-size: 12px;
@@ -72,7 +77,6 @@
   line-height: 1.1;
   margin-bottom: 12px;
 
-  /* Título claro con foco azul */
   color: #eef2ff;
   text-shadow: 0 8px 30px rgba(19, 100, 255, 0.35);
 }
@@ -125,20 +129,16 @@
   margin-top: 6px;
 }
 
-/* =========================
-   COLUMNA DERECHA (visual)
-   ========================= */
 .hero-visual {
   position: relative;
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  padding-top: 70px;      /* espacio para el chico arriba */
-  padding-bottom: 130px;  /* espacio para la chica abajo */
+  padding-top: 70px;    
+  padding-bottom: 130px; 
   z-index: 1;
 }
 
-/* Glow difuminado detrás de personajes y tarjeta */
 .hero-visual::before {
   content: "";
   position: absolute;
@@ -161,7 +161,6 @@
   z-index: 2;
 }
 
-/* Contenedor absoluto de personajes */
 .hero-illustrations {
   position: absolute;
   inset: 0;
@@ -169,7 +168,6 @@
   pointer-events: none;
 }
 
-/* Personajes */
 .hero-illustration {
   position: absolute;
   width: 64%;
@@ -194,7 +192,6 @@
   filter: drop-shadow(0 16px 30px rgba(0,0,0,0.45));
 }
 
-/* Tarjeta resumen */
 .hero-card {
   border-radius: 22px;
   padding: 20px 22px;
@@ -228,7 +225,6 @@
   opacity: 0.95;
 }
 
-/* Burbujas */
 .hero-bubble {
   position: absolute;
   font-size: 11px;
@@ -243,11 +239,8 @@
 .hero-bubble--2 { bottom: -12px; left: -6px; }
 .hero-bubble--3 { bottom: -20px; right: 0; }
 
-/* =========================
-   HEADER superior
-   ========================= */
 .home-header {
-  position: fixed; /* barra fija y visible */
+  position: fixed; 
   top: 0;
   left: 0;
   width: 100%;
@@ -261,7 +254,6 @@
   box-shadow: 0 8px 18px rgba(0,0,0,0.35);
 }
 
-/* Container full width para logo a la izquierda */
 .home-header .container {
   max-width: 100%;
   padding-left: 18px;
@@ -301,9 +293,6 @@
   background: rgba(19,100,255,0.15);
 }
 
-/* =========================
-   ANIMACIONES (más notorias)
-   ========================= */
 .hero-card--floating {
   animation: floatCard 5s ease-in-out infinite;
 }
@@ -335,9 +324,6 @@
   100% { transform: translateY(0) scale(1); }
 }
 
-/* =========================
-   FRANJA DE BENEFICIOS
-   ========================= */
 .home-stats {
   padding: 36px 0 40px;
   background: linear-gradient(to bottom, #0b1024, #050714);
@@ -365,14 +351,11 @@
   margin: 0;
 }
 
-/* =========================
-   RESPONSIVE
-   ========================= */
 @media (max-width: 991.98px) {
   .home-title { font-size: 32px; }
 
   .home-hero {
-    padding-top: 80px; /* por header fixed */
+    padding-top: 80px; 
     padding-bottom: 40px;
   }
 

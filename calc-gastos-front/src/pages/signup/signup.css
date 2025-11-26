@@ -1,4 +1,3 @@
-/* ====== HERO FONDO OSCURO EN SINTONÍA CON INICIO/LOGIN ====== */
 .signup-hero {
   position: relative;
   min-height: 100vh;
@@ -12,7 +11,6 @@
       padding-top: 64px;
 }
 
-/* Destellos amarillos tipo iluminación (más grandes y llamativos) */
 .signup-hero::after {
   content: "";
   position: absolute;
@@ -20,7 +18,7 @@
   pointer-events: none;
 
   background-image:
-    /* destellos grandes */
+  
     radial-gradient(14px 14px at 7% 18%, rgba(255, 215, 110, 0.95), transparent 72%),
     radial-gradient(18px 18px at 18% 68%, rgba(255, 205, 90, 0.9), transparent 74%),
     radial-gradient(12px 12px at 33% 30%, rgba(255, 225, 140, 0.95), transparent 70%),
@@ -29,14 +27,12 @@
     radial-gradient(22px 22px at 86% 55%, rgba(255, 200, 80, 0.9), transparent 76%),
     radial-gradient(14px 14px at 94% 14%, rgba(255, 225, 140, 0.95), transparent 72%),
 
-    /* destellos medianos */
     radial-gradient(8px 8px at 12% 40%, rgba(255, 214, 102, 0.9), transparent 70%),
     radial-gradient(9px 9px at 28% 12%, rgba(255, 214, 102, 0.85), transparent 70%),
     radial-gradient(7px 7px at 44% 55%, rgba(255, 214, 102, 0.9), transparent 70%),
     radial-gradient(8px 8px at 63% 35%, rgba(255, 214, 102, 0.85), transparent 70%),
     radial-gradient(9px 9px at 77% 83%, rgba(255, 214, 102, 0.9), transparent 70%),
 
-    /* specks pequeños muy dispersos */
     radial-gradient(2px 2px at 9% 78%, rgba(255, 230, 160, 0.9), transparent 60%),
     radial-gradient(2px 2px at 26% 92%, rgba(255, 230, 160, 0.9), transparent 60%),
     radial-gradient(2px 2px at 58% 8%, rgba(255, 230, 160, 0.9), transparent 60%),
@@ -59,18 +55,15 @@
   }
 }
 
-/* ====== STAGE PARA POSICIONAR DECORACIONES ====== */
 .signup-stage {
   position: relative;
-  width: min(96vw, 900px);   /* limita el escenario */
+  width: min(96vw, 900px);  
   min-height: calc(100vh - 64px);
   display: grid;
   place-items: center;
-  padding: 150px 190px;      /* aire para flotantes grandes */
   overflow: visible;
 }
 
-/* ====== CARD FORM ====== */
 .signup-card {
   position: relative;
   width: min(92vw, 560px);
@@ -163,10 +156,9 @@
 }
 .signup-link:hover { text-decoration: underline; }
 
-/* ====== DECORACIONES (TODAS POR ENCIMA DE LA CARD) ====== */
 .signup-float {
   position: absolute;
-  z-index: 12; /* SIEMPRE por encima del recuadro */
+  z-index: 12; 
   pointer-events: none;
   filter: drop-shadow(0 12px 18px rgba(0,0,0,0.35));
   animation: floatSoft 5.5s ease-in-out infinite;
@@ -178,7 +170,7 @@
 }
 
 .signup-piggy {
-  top: -40px;   /* baja ~30px */
+  top: -40px;  
   right: -40px;
   width: clamp(220px, 22vw, 300px);
   animation-duration: 6s;
@@ -191,15 +183,13 @@
   animation-duration: 6.2s;
 }
 
-/* Gráfica: izquierda centrada y grande */
 .signup-chart {
   left: -230px;
-  top: 22%;          /* antes 38% → sube bastante */
+  top: 22%;         
   width: 310px;
   animation-duration: 5.8s;
 }
 
-/* Coins alrededor (más grandes) */
 .signup-coin {
   width: 160px;
 }
@@ -222,7 +212,6 @@
   animation-duration: 5.4s;
 }
 
-/* ====== RESPONSIVE ====== */
 @media (max-width: 991.98px) {
   .signup-stage {
     width: 100%;
@@ -258,12 +247,8 @@
   .signup-coin--3 { left: -50px; bottom: 14%; }
 }
 
-/* ================================
-   NAVBAR SUPERIOR (signup-header)
-================================ */
-/* ====== NAVBAR SUPERIOR ====== */
 .signup-header {
-  position: fixed;        /* se queda arriba siempre */
+  position: fixed;       
   top: 0;
   left: 0;
   right: 0;
@@ -280,8 +265,7 @@
   align-items: center;
   justify-content: space-between;
 
-  /* esto es lo importante: menos padding lateral */
-  padding: 0 12px;        /* antes seguramente 24px o más */
+  padding: 0 12px;       
   width: 100%;
   max-width: 100%;
 }

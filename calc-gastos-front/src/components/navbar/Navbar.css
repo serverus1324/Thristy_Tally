@@ -1,0 +1,118 @@
+/* ===== Barra superior ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 40;
+
+  /* Fondo ligeramente más oscuro que el resto del layout */
+  background: radial-gradient(circle at 0% 0%, rgba(15, 23, 42, 0.95), #020617);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.85);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  padding: 10px 32px;
+}
+
+/* Contenedor interno */
+.navbar-inner {
+  width: 100%;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Marca "Thrifty Tally"*/
+.navbar-brand {
+  margin-right: auto;       
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #e5e7eb;
+  text-align: left;
+}
+
+.navbar-brand span {
+  color: #3b82f6;
+}
+
+/* Contenedor de botones a la DERECHA */
+.navbar-right {
+  margin-left: auto;         
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Botones base */
+.nav-btn {
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease-out;
+  white-space: nowrap;
+}
+
+/* Botón "Editar datos" */
+.nav-btn-outline {
+  background: transparent;
+  color: #e5e7eb;
+  border-color: rgba(59, 130, 246, 0.6);
+}
+.nav-btn-outline:hover {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(59, 130, 246, 0.9);
+}
+
+/* Botón "Home" */
+.nav-btn-secondary {
+  background: rgba(231, 217, 25, 0.95);
+  color: #f9fafb;
+  box-shadow: 0 10px 25px rgba(147, 163, 22, 0.5);
+}
+.nav-btn-secondary:hover {
+  background: rgb(123, 128, 21);
+  transform: translateY(-1px);
+}
+
+/* Botón "Cerrar sesión" */
+.nav-btn-danger {
+  background: #ef4444;
+  color: #fef2f2;
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.6);
+}
+.nav-btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    padding-inline: 16px;
+  }
+
+  .navbar-inner {
+    gap: 10px;
+  }
+
+  .navbar-brand {
+    font-size: 18px;
+  }
+
+  .navbar-right {
+    gap: 8px;
+  }
+
+  .nav-btn {
+    padding: 5px 14px;
+    font-size: 13px;
+  }
+}
