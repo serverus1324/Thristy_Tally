@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface PeriodoRepository extends MongoRepository<Periodo, ObjectId> {
-    List<Periodo> findByIdEstudiante(ObjectId idEstudiante);
+    List<Periodo> findByIdPerfil(ObjectId idPerfil);
 }

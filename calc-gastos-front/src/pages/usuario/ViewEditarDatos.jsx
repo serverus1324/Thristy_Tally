@@ -17,8 +17,8 @@ const ViewEditarDatos = () => {
         val.$id ??
         val._id ??
         val.id ??
-        val.idEstudiante ??
-        val.data?.idEstudiante ??
+        val.idPerfil ??
+        val.data?.idPerfil ??
         val.data?._id;
       return raw ? String(raw).trim() : '';
     }
@@ -37,7 +37,7 @@ const ViewEditarDatos = () => {
     return s;
   };
 
-  const [idEstudiante, setIdEstudiante] = useState('');
+  const [idPerfil, setIdEstudiante] = useState('');
   const [form, setForm] = useState({
     nombre: '',
     email: '',
@@ -49,38 +49,38 @@ const ViewEditarDatos = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Resolver idEstudiante desde state o localStorage
+  // Resolver idPerfil desde state o localStorage
   useEffect(() => {
     const fromState =
-      location.state?.idEstudiante ??
+      location.state?.idPerfil ??
       location.state?.idUsuario ??
-      location.state?.userData?.data?.idEstudiante ??
+      location.state?.userData?.data?.idPerfil ??
       location.state?.userData?.data?._id;
 
     let resolved = normalizeId(fromState);
     if (!resolved) {
       try {
-        const ls = localStorage.getItem('idEstudiante');
+        const ls = localStorage.getItem('idPerfil');
         resolved = normalizeId(ls);
       } catch {}
     }
     setIdEstudiante(resolved);
 
     try {
-      if (resolved) localStorage.setItem('idEstudiante', String(resolved));
-      else localStorage.removeItem('idEstudiante');
+      if (resolved) localStorage.setItem('idPerfil', String(resolved));
+      else localStorage.removeItem('idPerfil');
     } catch {}
   }, [location.state]);
 
   // Cargar datos del estudiante
   useEffect(() => {
     const load = async () => {
-      if (!idEstudiante) {
+      if (!idPerfil) {
         setLoading(false);
         return;
       }
       try {
-        const resp = await getData(`estudiantes/${idEstudiante}`);
+        const resp = await getData(`estudiantes/${idPerfil}`);
         const est = resp?.data || resp;
         setForm((prev) => ({
           ...prev,
@@ -96,7 +96,7 @@ const ViewEditarDatos = () => {
       }
     };
     load();
-  }, [idEstudiante]);
+  }, [idPerfil]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -105,7 +105,7 @@ const ViewEditarDatos = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!idEstudiante) {
+    if (!idPerfil) {
       toast.error('ID de estudiante no disponible');
       return;
     }
@@ -114,19 +114,19 @@ const ViewEditarDatos = () => {
 
     try {
       const dto = {
-        id: idEstudiante,
+        id: idPerfil,
         nombre: form.nombre,
         email: form.email,
         telefono: form.telefono,
         username: form.username,
         password: form.password,
       };
-      await putData(`estudiantes/${idEstudiante}`, dto);
+      await putData(`estudiantes/${idPerfil}`, dto);
       toast.success('Datos actualizados correctamente');
       try {
-        localStorage.setItem('idEstudiante', String(idEstudiante));
+        localStorage.setItem('idPerfil', String(idPerfil));
       } catch {}
-      navigate('/home', { state: { idEstudiante } });
+      navigate('/home', { state: { idPerfil } });
     } catch (e) {
       console.error(e);
       setError(e?.message || 'Error al guardar');
@@ -138,8 +138,8 @@ const ViewEditarDatos = () => {
 
   /* ==== acciones para el Navbar ==== */
   const handleGoHome = () => {
-    if (idEstudiante) {
-      navigate('/home', { state: { idEstudiante } });
+    if (idPerfil) {
+      navigate('/home', { state: { idPerfil } });
     } else {
       navigate('/home');
     }
@@ -204,7 +204,7 @@ const ViewEditarDatos = () => {
           <section className="tt-card-glass">
             {error && <p className="tt-alert">{error}</p>}
 
-            {!idEstudiante && (
+            {!idPerfil && (
               <p className="tt-alert">
                 No se encontró el identificador del estudiante. Intenta ingresar
                 desde el Home.

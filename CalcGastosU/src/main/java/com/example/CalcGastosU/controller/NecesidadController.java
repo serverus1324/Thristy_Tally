@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping(path = "/api/v1/necesidades")
 public class NecesidadController {
@@ -55,19 +56,19 @@ public class NecesidadController {
             List<Necesidad> necesidadesGuardadas = necesidadService.save(dtoList);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", necesidadesGuardadas); // Devuelve las entidades guardadas
+            response.put("data", necesidadesGuardadas);
             response.put("mensaje", String.format("%d necesidad(es) guardada(s) exitosamente.", necesidadesGuardadas.size()));
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException e) { // Captura excepciones como "Entidad no encontrada"
+        } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("mensaje", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        } catch (Exception e) { // Captura otros errores inesperados
+        } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("mensaje", "Error inesperado al guardar necesidades: " + e.getCause());
-            e.printStackTrace(); // Loggear el error completo en el servidor para depuración
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -108,15 +109,15 @@ public class NecesidadController {
         }
     }
 
-    @GetMapping("/por-estudiante-periodo")
-    public ResponseEntity<?> findByIdEstudianteAndIdPeriodo(
-            @RequestParam ObjectId idEstudiante,
+    @GetMapping("/por-perfil-periodo")
+    public ResponseEntity<?> findByIdPerfilAndIdPeriodo(
+            @RequestParam ObjectId idPerfil,
             @RequestParam ObjectId idPeriodo) {
-        List<Necesidad> necesidades = necesidadService.findByIdEstudianteAndIdPeriodo(idEstudiante, idPeriodo);
+        List<Necesidad> necesidades = necesidadService.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("data", necesidades);
-        response.put("mensaje", "Necesidades por estudiante y período obtenidas exitosamente");
+        response.put("mensaje", "Necesidades por perfil y período obtenidas exitosamente");
         return ResponseEntity.ok(response);
     }
 
@@ -159,21 +160,20 @@ public class NecesidadController {
 
     @GetMapping("/resumen-presupuesto")
     public ResponseEntity<?> obtenerResumenPorPeriodo(
-            @RequestParam("idEstudiante") String idEstudiante,
+            @RequestParam("idPerfil") String idPerfil,
             @RequestParam("idPeriodo") String idPeriodo) {
 
         try {
-            // validación de formato ObjectId
-            if (!ObjectId.isValid(idEstudiante) || !ObjectId.isValid(idPeriodo)) {
+            if (!ObjectId.isValid(idPerfil) || !ObjectId.isValid(idPeriodo)) {
                 return ResponseEntity
                         .badRequest()
                         .body(Map.of(
                                 "success", false,
-                                "mensaje", "Formato de idEstudiante o idPeriodo inválido"));
+                                "mensaje", "Formato de idPerfil o idPeriodo inválido"));
             }
 
             ResumenPresupuestoDTO resumen = necesidadService.obtenerResumenPorPeriodo(
-                    new ObjectId(idEstudiante),
+                    new ObjectId(idPerfil),
                     new ObjectId(idPeriodo));
 
             return ResponseEntity.ok(Map.of(
@@ -182,7 +182,6 @@ public class NecesidadController {
                     "mensaje", "Resumen obtenido exitosamente"));
 
         } catch (RuntimeException ex) {
-            // Capturamos la excepción lanzada por el servicio
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(Map.of(
@@ -190,7 +189,6 @@ public class NecesidadController {
                             "mensaje", ex.getMessage()));
         }
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable ObjectId id) {

@@ -31,9 +31,9 @@ public class Periodo {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate fechaFin;
 
-    @BsonProperty("idEstudiante")
+    @BsonProperty("idPerfil")
     @JsonSerialize(using = ObjectIdSerializer.class)
-    private ObjectId idEstudiante;
+    private ObjectId idPerfil;
 
     public Periodo id(ObjectId id) {
         this.id = id;
@@ -48,6 +48,7 @@ public class Periodo {
     public void setId(ObjectId id) {
         this.id = id;
     }
+
     public Periodo fechaFin(LocalDate fechaFin) {
         this.fechaFin = fechaFin;
         return this;
@@ -90,50 +91,46 @@ public class Periodo {
         this.nombre = nombre;
     }
 
-    public Periodo idEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = idEstudiante;
+    public Periodo idPerfil(ObjectId idPerfil) {
+        this.idPerfil = idPerfil;
         return this;
     }
 
-    @JsonProperty("idEstudiante")
-    public ObjectId getIdEstudiante() {
-        return idEstudiante;
+    @JsonProperty("idPerfil")
+    public ObjectId getIdPerfil() {
+        return idPerfil;
     }
 
-    public void setIdEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = idEstudiante;
+    public void setIdPerfil(ObjectId idPerfil) {
+        this.idPerfil = idPerfil;
     }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Periodo periodos = (Periodo) o;
-        return Objects.equals(this.id, periodos.id) &&
-                Objects.equals(this.fechaFin, periodos.fechaFin) &&
-                Objects.equals(this.fechaInicio, periodos.fechaInicio) &&
-                Objects.equals(this.nombre, periodos.nombre) &&
-                Objects.equals(this.idEstudiante, periodos.idEstudiante);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Periodo periodo = (Periodo) o;
+        return Objects.equals(id, periodo.id) &&
+                Objects.equals(fechaFin, periodo.fechaFin) &&
+                Objects.equals(fechaInicio, periodo.fechaInicio) &&
+                Objects.equals(nombre, periodo.nombre) &&
+                Objects.equals(idPerfil, periodo.idPerfil);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, id, fechaFin, fechaInicio, nombre, idEstudiante);
+        return Objects.hash(id, fechaFin, fechaInicio, nombre, idPerfil);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class PeriodosEntity {\n");
-        sb.append("    id: ").append(toIndentedString(id)).append("\n");
+        sb.append("class Periodo {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    fechaFin: ").append(toIndentedString(fechaFin)).append("\n");
         sb.append("    fechaInicio: ").append(toIndentedString(fechaInicio)).append("\n");
         sb.append("    nombre: ").append(toIndentedString(nombre)).append("\n");
-        sb.append("    idEstudiante: ").append(toIndentedString(idEstudiante)).append("\n");
+        sb.append("    idPerfil: ").append(toIndentedString(idPerfil)).append("\n");
         sb.append("}");
         return sb.toString();
     }

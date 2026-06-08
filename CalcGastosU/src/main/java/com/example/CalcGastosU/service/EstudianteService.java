@@ -36,6 +36,7 @@ public class EstudianteService {
         estudiante.setNombre(dto.getNombre());
         estudiante.setEmail(dto.getEmail());
         estudiante.setTelefono(dto.getTelefono());
+        estudiante.setTipoUsuario(dto.getTipoUsuario());
 
         estudianteRepository.save(estudiante);
 
@@ -57,6 +58,9 @@ public class EstudianteService {
         estudiante.setNombre(dto.getNombre());
         estudiante.setEmail(dto.getEmail());
         estudiante.setTelefono(dto.getTelefono());
+        if (dto.getTipoUsuario() != null) {
+            estudiante.setTipoUsuario(dto.getTipoUsuario());
+        }
         estudianteRepository.save(estudiante);
 
         Usuario usuario = usuarioRepository.findByIdEstudiante(estudiante.getId())

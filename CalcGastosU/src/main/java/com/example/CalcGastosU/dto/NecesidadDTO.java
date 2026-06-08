@@ -19,7 +19,7 @@ public class NecesidadDTO implements Serializable {
     private Integer esPredeterminada;
     private Boolean excedePresupuesto = false;
     @JsonDeserialize(using = ObjectIdDeserializer.class)
-    private ObjectId idEstudiante;
+    private ObjectId idPerfil;
     @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId idPeriodo;
     @JsonDeserialize(using = ObjectIdDeserializer.class)

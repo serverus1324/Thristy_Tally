@@ -30,9 +30,9 @@ public class Presupuesto {
     @BsonProperty("porcentajeAumento")
     private Double porcentajeAumento;
 
-    @BsonProperty("idEstudiante")
+    @BsonProperty("idPerfil")
     @JsonSerialize(using = ObjectIdSerializer.class)
-    private ObjectId idEstudiante;
+    private ObjectId idPerfil;
 
     @BsonProperty("idPeriodo")
     @JsonSerialize(using = ObjectIdSerializer.class)
@@ -80,19 +80,18 @@ public class Presupuesto {
         this.monto = monto;
     }
 
-    public Presupuesto idEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = idEstudiante;
+    public Presupuesto idPerfil(ObjectId idPerfil) {
+        this.idPerfil = idPerfil;
         return this;
     }
 
-
-    @JsonProperty("idEstudiante")
-    public ObjectId getIdEstudiante() {
-        return idEstudiante;
+    @JsonProperty("idPerfil")
+    public ObjectId getIdPerfil() {
+        return idPerfil;
     }
 
-    public void setIdEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = idEstudiante;
+    public void setIdPerfil(ObjectId idPerfil) {
+        this.idPerfil = idPerfil;
     }
 
     public Presupuesto idPeriodo(ObjectId idPeriodo) {
@@ -139,13 +138,13 @@ public class Presupuesto {
         return Objects.equals(this.id, presupuestos.id) &&
                 Objects.equals(this.descripcion, presupuestos.descripcion) &&
                 Objects.equals(this.monto, presupuestos.monto) &&
-                Objects.equals(this.idEstudiante, presupuestos.idEstudiante) &&
+                Objects.equals(this.idPerfil, presupuestos.idPerfil) &&
                 Objects.equals(this.idPeriodo, presupuestos.idPeriodo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, id, descripcion, monto, idEstudiante, idPeriodo);
+        return Objects.hash(id, id, descripcion, monto, idPerfil, idPeriodo);
     }
 
     @Override
@@ -156,7 +155,7 @@ public class Presupuesto {
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
         sb.append("    descripcion: ").append(toIndentedString(descripcion)).append("\n");
         sb.append("    monto: ").append(toIndentedString(monto)).append("\n");
-        sb.append("    idEstudiante: ").append(toIndentedString(idEstudiante)).append("\n");
+        sb.append("    idPerfil: ").append(toIndentedString(idPerfil)).append("\n");
         sb.append("    idPeriodo: ").append(toIndentedString(idPeriodo)).append("\n");
         sb.append("}");
         return sb.toString();

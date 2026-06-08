@@ -10,7 +10,6 @@ export default defineConfig({
         target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
-        // Mantener el prefijo /api/v1 y reenviar al backend
         rewrite: (path) => path.replace(/^\/api\/v1/, '/api/v1'),
       },
       '/api/prediccion': {
@@ -18,6 +17,18 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api\/prediccion/, '/api/prediccion'),
+      },
+      '/api/auth': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/auth/, '/api/auth'),
+      },
+      '/api/admin': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/admin/, '/api/admin'),
       },
     },
   },

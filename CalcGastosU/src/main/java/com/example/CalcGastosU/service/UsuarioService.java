@@ -1,8 +1,8 @@
 package com.example.CalcGastosU.service;
 
-import com.example.CalcGastosU.entity.Estudiante;
+import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Usuario;
-import com.example.CalcGastosU.repository.EstudianteRepository;
+import com.example.CalcGastosU.repository.PerfilRepository;
 import com.example.CalcGastosU.repository.UsuarioRepository;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private EstudianteRepository estudianteRepository;
+    private PerfilRepository perfilRepository;
 
     public List<Usuario> GetUsuarios() {
         return usuarioRepository.findAll();
@@ -57,15 +57,13 @@ public class UsuarioService {
         return usuario;
     }
 
-    public Estudiante getEstudiante(ObjectId idUsuario) {
+    public Perfil getPerfil(ObjectId idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        ObjectId idEstudiante = usuario.getIdEstudiante();
+        ObjectId idPerfil = usuario.getIdPerfil();
 
-        return estudianteRepository.findById(idEstudiante)
-                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+        return perfilRepository.findById(idPerfil)
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
     }
-
-
 }

@@ -144,12 +144,11 @@ export default function Prediction() {
     }
   }
 
-  // Cargar periodos del estudiante
   useEffect(() => {
     async function loadPeriodos() {
-      let idEst = location.state?.idEstudiante || null;
+      let idEst = location.state?.idPerfil || null;
       try {
-        const fromStorage = localStorage.getItem("idEstudiante");
+        const fromStorage = localStorage.getItem("idPerfil");
         if (!idEst && fromStorage) idEst = String(fromStorage);
       } catch {}
       if (!idEst) return;
@@ -169,23 +168,23 @@ export default function Prediction() {
 
   useEffect(() => {
     async function loadContextForPeriodo() {
-      let idEst = location.state?.idEstudiante || null;
+      let idEst = location.state?.idPerfil || null;
       try {
-        const fromStorage = localStorage.getItem("idEstudiante");
+        const fromStorage = localStorage.getItem("idPerfil");
         if (!idEst && fromStorage) idEst = String(fromStorage);
       } catch {}
       if (!idEst || !selectedPeriodo) return;
 
       try {
         const r = await getData(
-          `necesidades/resumen-presupuesto?idEstudiante=${idEst}&idPeriodo=${selectedPeriodo}`
+          `necesidades/resumen-presupuesto?idPerfil=${idEst}&idPeriodo=${selectedPeriodo}`
         );
         setResumen(r?.data || r);
       } catch {}
 
       try {
         const n = await getData(
-          `necesidades/por-estudiante-periodo?idEstudiante=${idEst}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-estudiante-periodo?idPerfil=${idEst}&idPeriodo=${selectedPeriodo}`
         );
         setNecesidades(
           Array.isArray(n?.data) ? n.data : Array.isArray(n) ? n : []
@@ -268,37 +267,38 @@ export default function Prediction() {
       <Navbar />
 
       <main className="pred-hero">
-        <section className="pred-card">
-          {/* Encabezado */}
-          <div className="pred-pill">ANÁLISIS</div>
-          <h1 className="pred-title">Predicción con modelo J48</h1>
-          <p className="pred-subtitle">
-            Seleccione un período, ajuste los valores de referencia y obtenga la
-            predicción de qué necesidad podría exceder el presupuesto.
-          </p>
+        <div className="pred-stage">
+          {/* Header Section */}
+          <div className="pred-header">
+            <div className="pred-pill">
+              <span className="pred-pill-dot"></span>
+              ANÁLISIS INTELIGENTE
+            </div>
+            <h1 className="pred-title">Predicción de Necesidades</h1>
+            <p className="pred-subtitle">
+              Selecciona un período y ajusta los parámetros para predecir cuál necesidad podría exceder tu presupuesto.
+            </p>
+          </div>
 
-          <div className="pred-divider" />
-
-          {/* Configuración del período */}
+          {/* Configuración Section */}
           <section className="pred-section">
-            <h2 className="pred-section-title">
-              Configuración del período
-            </h2>
-
-            <div className="pred-grid-2">
-              <div className="pred-field">
-                <label className="pred-label">Periodo</label>
-                <p className="pred-help">
-                  Al seleccionar un período se cargan automáticamente el
-                  presupuesto total, el gasto acumulado y las necesidades
-                  registradas.
+            <h2 className="pred-section-title">Configuración</h2>
+            <div className="pred-config-grid">
+              {/* Card 1 - Periodo */}
+              <div className="pred-config-card">
+                <label className="pred-config-label">
+                  <span className="pred-config-icon blue">📅</span>
+                  Período
+                </label>
+                <p className="pred-config-help">
+                  Selecciona un período para cargar sus datos automáticamente
                 </p>
                 <select
                   className="pred-input"
                   value={selectedPeriodo}
                   onChange={(e) => setSelectedPeriodo(e.target.value)}
                 >
-                  <option value="">-- Seleccione período --</option>
+                  <option value="">-- Selecciona un período --</option>
                   {periodos.map((per) => (
                     <option
                       key={String(per.id || per._id)}
@@ -310,13 +310,14 @@ export default function Prediction() {
                 </select>
               </div>
 
-              <div className="pred-field">
-                <label className="pred-label">
+              {/* Card 2 - Promedio */}
+              <div className="pred-config-card">
+                <label className="pred-config-label">
+                  <span className="pred-config-icon teal">📊</span>
                   Promedio últimos 3 períodos
                 </label>
-                <p className="pred-help">
-                  Referencia para estimar la tendencia de gasto. Por ejemplo, el
-                  promedio del gasto total de los tres últimos períodos.
+                <p className="pred-config-help">
+                  Valor de referencia para calcular la tendencia de gasto
                 </p>
                 <input
                   type="number"
@@ -326,13 +327,14 @@ export default function Prediction() {
                 />
               </div>
 
-              <div className="pred-field pred-field--full">
-                <label className="pred-label">
+              {/* Card 3 - Duración */}
+              <div className="pred-config-card">
+                <label className="pred-config-label">
+                  <span className="pred-config-icon green">⏱️</span>
                   Duración del mes (días)
                 </label>
-                <p className="pred-help">
-                  Puede dejar el valor detectado o ajustar a 30/31 según el
-                  período seleccionado.
+                <p className="pred-config-help">
+                  Ajusta la duración según el período seleccionado
                 </p>
                 <input
                   type="number"
@@ -344,71 +346,73 @@ export default function Prediction() {
             </div>
           </section>
 
-          {/* Resumen del periodo */}
+          {/* Resumen Section */}
           <section className="pred-section">
-            <h2 className="pred-section-title">
-              Resumen del período seleccionado
-            </h2>
-
+            <h2 className="pred-section-title">Resumen del Período</h2>
             <div className="pred-summary-grid">
               <div className="pred-summary-card">
-                <span className="pred-summary-label">
-                  Total asignado
-                </span>
-                <span className="pred-summary-value">
-                  {resumenCalc.totalAsignado}
-                </span>
+                <div className="pred-summary-icon blue"></div>
+                <div className="pred-summary-content">
+                  <p className="pred-summary-label">Total Asignado</p>
+                  <h4 className="pred-summary-value">
+                    ${Number(resumenCalc.totalAsignado || 0).toLocaleString()}
+                  </h4>
+                </div>
               </div>
+
               <div className="pred-summary-card">
-                <span className="pred-summary-label">
-                  Total gastado
-                </span>
-                <span className="pred-summary-value">
-                  {resumenCalc.totalGastado}
-                </span>
+                <div className="pred-summary-icon red"></div>
+                <div className="pred-summary-content">
+                  <p className="pred-summary-label">Total Gastado</p>
+                  <h4 className="pred-summary-value">
+                    ${Number(resumenCalc.totalGastado || 0).toLocaleString()}
+                  </h4>
+                </div>
               </div>
+
               <div className="pred-summary-card">
-                <span className="pred-summary-label">
-                  Disponible
-                </span>
-                <span className="pred-summary-value">
-                  {resumenCalc.disponible}
-                </span>
+                <div className="pred-summary-icon green"></div>
+                <div className="pred-summary-content">
+                  <p className="pred-summary-label">Disponible</p>
+                  <h4 className="pred-summary-value">
+                    ${Number(resumenCalc.disponible || 0).toLocaleString()}
+                  </h4>
+                </div>
               </div>
+
               <div className="pred-summary-card">
-                <span className="pred-summary-label">
-                  Porcentaje consumido
-                </span>
-                <span className="pred-summary-value">
-                  {`${(resumenCalc.pct * 100).toFixed(1)}%`}
-                </span>
+                <div className="pred-summary-icon purple"></div>
+                <div className="pred-summary-content">
+                  <p className="pred-summary-label">% Consumido</p>
+                  <h4 className="pred-summary-value">
+                    {`${Math.min(100, Number((resumenCalc.pct * 100) || 0)).toFixed(1)}%`}
+                  </h4>
+                </div>
               </div>
+
               <div className="pred-summary-card">
-                <span className="pred-summary-label">
-                  Necesidades registradas
-                </span>
-                <span className="pred-summary-value">
-                  {resumenCalc.cantidad}
-                </span>
+                <div className="pred-summary-icon orange"></div>
+                <div className="pred-summary-content">
+                  <p className="pred-summary-label">Necesidades</p>
+                  <h4 className="pred-summary-value">
+                    {resumenCalc.cantidad}
+                  </h4>
+                </div>
               </div>
+
               <div className="pred-summary-card">
-                <span className="pred-summary-label">Mes</span>
-                <span className="pred-summary-value">
-                  {resumenCalc.mes || "-"}
-                </span>
+                <div className="pred-summary-icon cyan"></div>
+                <div className="pred-summary-content">
+                  <p className="pred-summary-label">Mes</p>
+                  <h4 className="pred-summary-value">
+                    {resumenCalc.mes || "-"}
+                  </h4>
+                </div>
               </div>
             </div>
 
-            <div className="pred-footer-row">
-              <button
-                type="button"
-                className="pred-btn-primary"
-                onClick={handleSubmit}
-                disabled={loading || !selectedPeriodo}
-              >
-                {loading ? "Cargando..." : "Obtener predicción"}
-              </button>
-
+            {/* Action Button & Model Status */}
+            <div className="pred-action-section">
               <div className="pred-model-status">
                 <span
                   className={
@@ -421,36 +425,50 @@ export default function Prediction() {
                   {status?.ready ? "Listo para predecir" : "No disponible"}
                 </span>
               </div>
+
+              <button
+                type="button"
+                className="pred-btn-primary"
+                onClick={handleSubmit}
+                disabled={loading || !selectedPeriodo}
+              >
+                {loading ? "Procesando..." : "Obtener Predicción"}
+              </button>
             </div>
           </section>
 
-          {/* Resultado */}
+          {/* Error */}
           {error && (
             <div className="pred-alert pred-alert--error">{error}</div>
           )}
 
+          {/* Result */}
           {result && (
             <section className="pred-section pred-result">
-              <h2 className="pred-section-title">Resultado de la predicción</h2>
-              <p className="pred-result-main">
-                {String(result?.resultado ?? "")}
-              </p>
-              <p className="pred-help">
-                Esta es la necesidad que el modelo estima que podría exceder el
-                presupuesto según los datos del período seleccionado.
-              </p>
+              <div className="pred-result-card">
+                <h2 className="pred-result-title">Resultado de la Predicción</h2>
+                <div className="pred-result-main">
+                  {String(result?.resultado || "Sin resultados")}
+                </div>
+                <p className="pred-config-help">
+                  Esta es la necesidad que el modelo estima podría exceder el presupuesto según los datos del período.
+                </p>
 
-              <div className="pred-result-meta">
-                <span>Clase: {className ?? "-"}</span>
-                <span>Atributos: {attrs.length}</span>
-                <span>
-                  Estado del modelo:{" "}
-                  {status?.ready ? "Listo" : "No disponible"}
-                </span>
+                <div className="pred-result-meta">
+                  <span className="pred-result-meta-item">
+                    Clase: <strong>{className || "-"}</strong>
+                  </span>
+                  <span className="pred-result-meta-item">
+                    Atributos: <strong>{attrs.length}</strong>
+                  </span>
+                  <span className="pred-result-meta-item">
+                    Estado: <strong>{status?.ready ? "Listo" : "No disponible"}</strong>
+                  </span>
+                </div>
               </div>
             </section>
           )}
-        </section>
+        </div>
       </main>
     </div>
   );

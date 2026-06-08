@@ -11,9 +11,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Objects;
 
-@JsonTypeName("estudiantes")
-@Document("estudiantes")
-public class Estudiante {
+@JsonTypeName("perfiles")
+@Document(collection = "perfiles")
+public class Perfil {
 
     @BsonProperty("_id")
     @JsonSerialize(using = ObjectIdSerializer.class)
@@ -28,14 +28,10 @@ public class Estudiante {
     @BsonProperty("telefono")
     private String telefono;
 
-    @BsonProperty("idEstudiante")
-    private ObjectId idEstudiante;
-
     @BsonProperty("tipoUsuario")
     private TipoUsuario tipoUsuario;
 
-
-    public Estudiante id(ObjectId id) {
+    public Perfil id(ObjectId id) {
         this.id = id;
         return this;
     }
@@ -49,21 +45,7 @@ public class Estudiante {
         this.id = id;
     }
 
-    public Estudiante idEstudiante(ObjectId id) {
-        this.idEstudiante = id;
-        return this;
-    }
-
-    @JsonProperty("idEstudiante")
-    public ObjectId getIdEstudiante() {
-        return id;
-    }
-
-    public void setIdEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = id;
-    }
-
-    public Estudiante email(String email) {
+    public Perfil email(String email) {
         this.email = email;
         return this;
     }
@@ -77,7 +59,7 @@ public class Estudiante {
         this.email = email;
     }
 
-    public Estudiante nombre(String nombre) {
+    public Perfil nombre(String nombre) {
         this.nombre = nombre;
         return this;
     }
@@ -91,7 +73,7 @@ public class Estudiante {
         this.nombre = nombre;
     }
 
-    public Estudiante telefono(String telefono) {
+    public Perfil telefono(String telefono) {
         this.telefono = telefono;
         return this;
     }
@@ -105,7 +87,7 @@ public class Estudiante {
         this.telefono = telefono;
     }
 
-    public Estudiante tipoUsuario(TipoUsuario tipoUsuario) {
+    public Perfil tipoUsuario(TipoUsuario tipoUsuario) {
         this.tipoUsuario = tipoUsuario;
         return this;
     }
@@ -121,31 +103,25 @@ public class Estudiante {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Estudiante estudiantes = (Estudiante) o;
-        return Objects.equals(this.id, estudiantes.id) &&
-                Objects.equals(this.idEstudiante, estudiantes.idEstudiante) &&
-                Objects.equals(this.email, estudiantes.email) &&
-                Objects.equals(this.nombre, estudiantes.nombre) &&
-                Objects.equals(this.telefono, estudiantes.telefono);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Perfil perfil = (Perfil) o;
+        return Objects.equals(id, perfil.id) &&
+                Objects.equals(email, perfil.email) &&
+                Objects.equals(nombre, perfil.nombre) &&
+                Objects.equals(telefono, perfil.telefono);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, idEstudiante, email, nombre, telefono);
+        return Objects.hash(id, email, nombre, telefono);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class EstudiantesEntity {\n");
+        sb.append("class Perfil {\n");
         sb.append("    id: ").append(toIndentedString(id)).append("\n");
-        sb.append("    idEstudiante: ").append(toIndentedString(id)).append("\n");
         sb.append("    email: ").append(toIndentedString(email)).append("\n");
         sb.append("    nombre: ").append(toIndentedString(nombre)).append("\n");
         sb.append("    telefono: ").append(toIndentedString(telefono)).append("\n");

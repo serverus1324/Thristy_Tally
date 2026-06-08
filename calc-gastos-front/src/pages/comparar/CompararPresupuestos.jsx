@@ -30,7 +30,7 @@ const CompararPresupuestos = () => {
         val._id ??
         val.oid ??
         val.id ??
-        val.data?.idEstudiante ??
+        val.data?.idPerfil ??
         val.data?._id;
       return raw ? String(raw) : '';
     }
@@ -41,18 +41,17 @@ const CompararPresupuestos = () => {
     typeof v === 'string' &&
     (/^[a-fA-F0-9]{24}$/.test(v) || /^\d+$/.test(v));
 
- 
-  let idEstudiante = '';
+  let idPerfil = '';
   try {
-    const v = localStorage.getItem('idEstudiante');
+    const v = localStorage.getItem('idPerfil');
     const n = normalizeId(v);
-    if (isValidId(n)) idEstudiante = n;
+    if (isValidId(n)) idPerfil = n;
   } catch {}
-  if (!isValidId(idEstudiante)) {
+  if (!isValidId(idPerfil)) {
     const n = normalizeId(
-      location.state?.idEstudiante ?? location.state?.idUsuario
+      location.state?.idPerfil ?? location.state?.idUsuario
     );
-    if (isValidId(n)) idEstudiante = n;
+    if (isValidId(n)) idPerfil = n;
   }
 
   // Estado general
@@ -77,7 +76,7 @@ const CompararPresupuestos = () => {
 
   // Cargar listas base
   useEffect(() => {
-    if (!isValidId(idEstudiante)) {
+    if (!isValidId(idPerfil)) {
       toast.error('ID de estudiante inválido. Inicia sesión nuevamente.');
       return;
     }
@@ -87,7 +86,7 @@ const CompararPresupuestos = () => {
         // Presupuestos del estudiante
         try {
           const pData = await getData(
-            `presupuestos/estudiante/${idEstudiante}`
+            `presupuestos/estudiante/${idPerfil}`
           );
           const arr = Array.isArray(pData?.data)
             ? pData.data
@@ -103,7 +102,7 @@ const CompararPresupuestos = () => {
         // Períodos del estudiante
         try {
           const perData = await getData(
-            `periodos/${idEstudiante}/por-estudiante`
+            `periodos/${idPerfil}/por-estudiante`
           );
           const arr = Array.isArray(perData?.data)
             ? perData.data
@@ -121,9 +120,8 @@ const CompararPresupuestos = () => {
       }
     };
     cargar();
-  }, [idEstudiante]);
+  }, [idPerfil]);
 
-  
   const cargarPorPresupuesto = async (id, setterNeeds, setterSummary) => {
     if (!id) return;
     try {
@@ -144,7 +142,7 @@ const CompararPresupuestos = () => {
       if (idPeriodo) {
         try {
           const sData = await getData(
-            `necesidades/resumen-presupuesto?idEstudiante=${idEstudiante}&idPeriodo=${idPeriodo}`
+            `necesidades/resumen-presupuesto?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
           );
           setterSummary(sData?.data || sData || null);
         } catch (e) {
@@ -164,7 +162,7 @@ const CompararPresupuestos = () => {
     try {
       // Necesidades por estudiante y periodo
       const nData = await getData(
-        `necesidades/por-estudiante-periodo?idEstudiante=${idEstudiante}&idPeriodo=${idPeriodo}`
+        `necesidades/por-estudiante-periodo?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
       );
       const needs = Array.isArray(nData?.data)
         ? nData.data
@@ -175,7 +173,7 @@ const CompararPresupuestos = () => {
       // Resumen del presupuesto para el periodo
       try {
         const sData = await getData(
-          `necesidades/resumen-presupuesto?idEstudiante=${idEstudiante}&idPeriodo=${idPeriodo}`
+          `necesidades/resumen-presupuesto?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
         );
         setterSummary(sData?.data || sData || null);
       } catch (e) {
@@ -183,7 +181,7 @@ const CompararPresupuestos = () => {
       }
     } catch (e) {
       console.error('Error al cargar por periodo', e);
-      toast.error('No se pudo cargar datos del periodo seleccionado');
+      toast.error('No se pudo cargar datos del período seleccionado');
     }
   };
 
@@ -338,13 +336,12 @@ const CompararPresupuestos = () => {
     if (!canCompare) {
       toast.warning('Selecciona dos elementos para comparar');
     }
-    
   };
 
-  /* ==== acciones para el Navbar universal ==== */
+  /* === acciones para el Navbar universal === */
   const handleGoHome = () => {
-    if (idEstudiante) {
-      navigate('/home', { state: { idEstudiante } });
+    if (idPerfil) {
+      navigate('/home', { state: { idPerfil } });
     } else {
       navigate('/home');
     }
@@ -358,25 +355,24 @@ const CompararPresupuestos = () => {
   };
 
   const handleEditProfile = () => {
-    if (idEstudiante) {
-      navigate('/editar-datos', { state: { idEstudiante } });
+    if (idPerfil) {
+      navigate('/editar-datos', { state: { idPerfil } });
     }
   };
 
   return (
     <>
       <Navbar
-      
         userName={location.state?.userName}
         onHome={handleGoHome}
         onLogout={handleLogout}
         onEditProfile={handleEditProfile}
       />
 
-      <main className="tt-wizard-hero">
-        <div className="tt-wizard-stage tt-compare-stage">
+      <main className="tt-compare-hero">
+        <div className="tt-compare-stage">
           {/* Encabezado principal */}
-          <header className="tt-card-glass tt-compare-header">
+          <header className="tt-compare-header">
             <div>
               <span className="tt-chip">ANÁLISIS</span>
               <h1 className="tt-wizard-title">
@@ -414,11 +410,11 @@ const CompararPresupuestos = () => {
           )}
 
           {/* Selección A / B */}
-          <section className="tt-card-glass tt-compare-card">
-            <div className="tt-grid-3 tt-compare-selectors">
-              <div className="tt-field">
+          <section className="tt-card-glass tt-selector-card">
+            <div className="tt-selector-row">
+              <div className="tt-selector-field">
                 <label className="tt-label">
-                  Seleccionar {mode === 'presupuestos' ? 'presupuesto' : 'período'} A
+                  {mode === 'presupuestos' ? 'Presupuesto' : 'Período'} A
                 </label>
                 <select
                   className="tt-select"
@@ -440,9 +436,9 @@ const CompararPresupuestos = () => {
                 </select>
               </div>
 
-              <div className="tt-field">
+              <div className="tt-selector-field">
                 <label className="tt-label">
-                  Seleccionar {mode === 'presupuestos' ? 'presupuesto' : 'período'} B
+                  {mode === 'presupuestos' ? 'Presupuesto' : 'Período'} B
                 </label>
                 <select
                   className="tt-select"
@@ -464,357 +460,367 @@ const CompararPresupuestos = () => {
                 </select>
               </div>
 
-              <div className="tt-compare-actions">
+              <div className="tt-selector-action">
                 <button
-                  className="tt-btn-success w-100"
+                  className="tt-btn-primary-gradient"
                   onClick={doCompare}
                   disabled={!canCompare || loading}
                 >
                   {loading ? 'Cargando…' : 'Comparar'}
                 </button>
-                {!canCompare && (
-                  <small className="tt-compare-hint">
-                    Seleccione dos elementos para comparar
-                  </small>
-                )}
               </div>
             </div>
           </section>
 
-          {/* Resúmenes A / B */}
-          <section className="tt-grid-2 tt-compare-summaries">
-            {/* Resumen A */}
-            <div className="tt-card-glass tt-summary-card">
-              <div className="tt-summary-header tt-summary-header-a">
-                <span>Resumen A</span>
+          {/* Empty State or Results */}
+          {!canCompare ? (
+            <section className="tt-empty-state-card">
+              <div className="tt-empty-state-icon">
+                🔍
               </div>
-              <div className="tt-summary-body">
-                {summaryA ? (
-                  <>
-                    <ul className="tt-summary-list">
-                      <li>
-                        <span>Total asignado</span>
-                        <span className="tt-summary-number primary">
-                          ${Number(summaryA.totalAsignado || 0).toLocaleString()}
-                        </span>
-                      </li>
-                      <li>
-                        <span>Gastado</span>
-                        <span className="tt-summary-number success">
-                          ${Number(summaryA.totalGastado || 0).toLocaleString()}
-                        </span>
-                      </li>
-                      <li>
-                        <span>Disponible</span>
-                        <span className="tt-summary-number">
-                          ${Number(summaryA.disponible || 0).toLocaleString()}
-                        </span>
-                      </li>
-                    </ul>
-
-                    <div className="tt-summary-progress">
-                      <div className="tt-summary-progress-meta">
-                        <small>% consumido</small>
-                        <small>{summaryA.porcentajeConsumido}%</small>
-                      </div>
-                      <div className="tt-summary-progress-bar">
-                        <div
-                          className="fill"
-                          style={{
-                            width: `${Math.min(
-                              Number(summaryA.porcentajeConsumido) || 0,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <h6 className="tt-summary-subtitle">Necesidades</h6>
-                    {needsA && needsA.length > 0 ? (
-                      <ul className="tt-summary-needs">
-                        {needsA.map((n, i) => (
-                          <li key={i}>
-                            <span>{n.descripcion}</span>
-                            <span className="badge bg-primary">
-                              ${Number(n.monto || 0).toLocaleString()}
+              <h3 className="tt-empty-state-title">Selecciona dos elementos para comenzar la comparación</h3>
+              <p className="tt-empty-state-subtitle">
+                Elige dos presupuestos o períodos para ver un análisis detallado de sus diferencias por categoría.
+              </p>
+            </section>
+          ) : (
+            <>
+              {/* Resúmenes A / B */}
+              <section className="tt-grid-2 tt-compare-summaries">
+                {/* Resumen A */}
+                <div className="tt-card-glass tt-summary-card">
+                  <div className="tt-summary-header tt-summary-header-a">
+                    <span>Resumen A</span>
+                  </div>
+                  <div className="tt-summary-body">
+                    {summaryA ? (
+                      <>
+                        <ul className="tt-summary-list">
+                          <li>
+                            <span>Total asignado</span>
+                            <span className="tt-summary-number primary">
+                              ${Number(summaryA.totalAsignado || 0).toLocaleString()}
                             </span>
                           </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="tt-muted">No hay necesidades registradas.</p>
-                    )}
-                  </>
-                ) : (
-                  <p className="tt-muted">Sin resumen disponible.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Resumen B */}
-            <div className="tt-card-glass tt-summary-card">
-              <div className="tt-summary-header tt-summary-header-b">
-                <span>Resumen B</span>
-              </div>
-              <div className="tt-summary-body">
-                {summaryB ? (
-                  <>
-                    <ul className="tt-summary-list">
-                      <li>
-                        <span>Total asignado</span>
-                        <span className="tt-summary-number primary">
-                          ${Number(summaryB.totalAsignado || 0).toLocaleString()}
-                        </span>
-                      </li>
-                      <li>
-                        <span>Gastado</span>
-                        <span className="tt-summary-number success">
-                          ${Number(summaryB.totalGastado || 0).toLocaleString()}
-                        </span>
-                      </li>
-                      <li>
-                        <span>Disponible</span>
-                        <span className="tt-summary-number">
-                          ${Number(summaryB.disponible || 0).toLocaleString()}
-                        </span>
-                      </li>
-                    </ul>
-
-                    <div className="tt-summary-progress">
-                      <div className="tt-summary-progress-meta">
-                        <small>% consumido</small>
-                        <small>{summaryB.porcentajeConsumido}%</small>
-                      </div>
-                      <div className="tt-summary-progress-bar">
-                        <div
-                          className="fill alt"
-                          style={{
-                            width: `${Math.min(
-                              Number(summaryB.porcentajeConsumido) || 0,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <h6 className="tt-summary-subtitle">Necesidades</h6>
-                    {needsB && needsB.length > 0 ? (
-                      <ul className="tt-summary-needs">
-                        {needsB.map((n, i) => (
-                          <li key={i}>
-                            <span>{n.descripcion}</span>
-                            <span className="badge bg-success">
-                              ${Number(n.monto || 0).toLocaleString()}
+                          <li>
+                            <span>Gastado</span>
+                            <span className="tt-summary-number success">
+                              ${Number(summaryA.totalGastado || 0).toLocaleString()}
                             </span>
                           </li>
-                        ))}
-                      </ul>
+                          <li>
+                            <span>Disponible</span>
+                            <span className="tt-summary-number">
+                              ${Number(summaryA.disponible || 0).toLocaleString()}
+                            </span>
+                          </li>
+                        </ul>
+
+                        <div className="tt-summary-progress">
+                          <div className="tt-summary-progress-meta">
+                            <small>% consumido</small>
+                            <small>{summaryA.porcentajeConsumido}%</small>
+                          </div>
+                          <div className="tt-summary-progress-bar">
+                            <div
+                              className="fill"
+                              style={{
+                                width: `${Math.min(
+                                  Number(summaryA.porcentajeConsumido) || 0,
+                                  100
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <h6 className="tt-summary-subtitle">Necesidades</h6>
+                        {needsA && needsA.length > 0 ? (
+                          <ul className="tt-summary-needs">
+                            {needsA.map((n, i) => (
+                              <li key={i}>
+                                <span>{n.descripcion}</span>
+                                <span className="badge bg-primary">
+                                  ${Number(n.monto || 0).toLocaleString()}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="tt-muted">No hay necesidades registradas.</p>
+                        )}
+                      </>
                     ) : (
-                      <p className="tt-muted">No hay necesidades registradas.</p>
+                      <p className="tt-muted">Sin resumen disponible.</p>
                     )}
-                  </>
-                ) : (
-                  <p className="tt-muted">Sin resumen disponible.</p>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Controles de diferencias */}
-          <section className="tt-card-glass tt-compare-controls">
-            <div className="tt-grid-4 tt-compare-controls-grid">
-              <div className="tt-field">
-                <label className="tt-label">Ordenar por</label>
-                <select
-                  className="tt-select"
-                  value={sortKey}
-                  onChange={(e) => setSortKey(e.target.value)}
-                >
-                  <option value="diff">Diferencia</option>
-                  <option value="categoria">Categoría</option>
-                  <option value="a">A</option>
-                  <option value="b">B</option>
-                </select>
-              </div>
-
-              <div className="tt-field">
-                <label className="tt-label">Dirección</label>
-                <select
-                  className="tt-select"
-                  value={sortDir}
-                  onChange={(e) => setSortDir(e.target.value)}
-                >
-                  <option value="desc">Desc</option>
-                  <option value="asc">Asc</option>
-                </select>
-              </div>
-
-              <div className="tt-field">
-                <label className="tt-label">Buscar categoría</label>
-                <input
-                  className="tt-input"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Ej: Alimentación"
-                />
-              </div>
-
-              <div className="tt-compare-filters">
-                <label className="tt-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={onlyDiffs}
-                    onChange={(e) => setOnlyDiffs(e.target.checked)}
-                  />
-                  <span>Solo diferencias</span>
-                </label>
-
-                <div className="tt-field">
-                  <label className="tt-label">Ver</label>
-                  <select
-                    className="tt-select"
-                    value={viewMode}
-                    onChange={(e) => setViewMode(e.target.value)}
-                  >
-                    <option value="monto">Montos</option>
-                    <option value="porcentaje">Porcentajes</option>
-                  </select>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="tt-compare-secondary-actions">
-              <button
-                className="tt-btn-ghost"
-                onClick={() => setHighlightCat('')}
-              >
-                Quitar resaltado
-              </button>
-              <button
-                className="tt-btn-primary"
-                onClick={downloadCSV}
-              >
-                Exportar CSV
-              </button>
-            </div>
-          </section>
+                {/* Resumen B */}
+                <div className="tt-card-glass tt-summary-card">
+                  <div className="tt-summary-header tt-summary-header-b">
+                    <span>Resumen B</span>
+                  </div>
+                  <div className="tt-summary-body">
+                    {summaryB ? (
+                      <>
+                        <ul className="tt-summary-list">
+                          <li>
+                            <span>Total asignado</span>
+                            <span className="tt-summary-number primary">
+                              ${Number(summaryB.totalAsignado || 0).toLocaleString()}
+                            </span>
+                          </li>
+                          <li>
+                            <span>Gastado</span>
+                            <span className="tt-summary-number success">
+                              ${Number(summaryB.totalGastado || 0).toLocaleString()}
+                            </span>
+                          </li>
+                          <li>
+                            <span>Disponible</span>
+                            <span className="tt-summary-number">
+                              ${Number(summaryB.disponible || 0).toLocaleString()}
+                            </span>
+                          </li>
+                        </ul>
 
-          {/* Gráfico de barras simplificado */}
-          <section className="tt-card-glass">
-            <h3 className="tt-card-h3">Top categorías</h3>
-            {canCompare ? (
-              topForChart.length ? (
-                <div className="tt-compare-chart">
-                  {topForChart.map((r, i) => {
-                    const maxVal = Math.max(r.a, r.b, 1);
-                    const wA = Math.round((r.a / maxVal) * 100);
-                    const wB = Math.round((r.b / maxVal) * 100);
-                    const isHL = highlightCat === r.categoria;
-                    return (
-                      <div
-                        key={i}
-                        className="tt-compare-chart-row"
-                        onMouseEnter={() => setHighlightCat(r.categoria)}
-                        onMouseLeave={() => setHighlightCat('')}
+                        <div className="tt-summary-progress">
+                          <div className="tt-summary-progress-meta">
+                            <small>% consumido</small>
+                            <small>{summaryB.porcentajeConsumido}%</small>
+                          </div>
+                          <div className="tt-summary-progress-bar">
+                            <div
+                              className="fill alt"
+                              style={{
+                                width: `${Math.min(
+                                  Number(summaryB.porcentajeConsumido) || 0,
+                                  100
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <h6 className="tt-summary-subtitle">Necesidades</h6>
+                        {needsB && needsB.length > 0 ? (
+                          <ul className="tt-summary-needs">
+                            {needsB.map((n, i) => (
+                              <li key={i}>
+                                <span>{n.descripcion}</span>
+                                <span className="badge bg-success">
+                                  ${Number(n.monto || 0).toLocaleString()}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="tt-muted">No hay necesidades registradas.</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="tt-muted">Sin resumen disponible.</p>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* Controles de diferencias */}
+              <section className="tt-card-glass tt-compare-controls">
+                <div className="tt-grid-4 tt-compare-controls-grid">
+                  <div className="tt-field">
+                    <label className="tt-label">Ordenar por</label>
+                    <select
+                      className="tt-select"
+                      value={sortKey}
+                      onChange={(e) => setSortKey(e.target.value)}
+                    >
+                      <option value="diff">Diferencia</option>
+                      <option value="categoria">Categoría</option>
+                      <option value="a">A</option>
+                      <option value="b">B</option>
+                    </select>
+                  </div>
+
+                  <div className="tt-field">
+                    <label className="tt-label">Dirección</label>
+                    <select
+                      className="tt-select"
+                      value={sortDir}
+                      onChange={(e) => setSortDir(e.target.value)}
+                    >
+                      <option value="desc">Desc</option>
+                      <option value="asc">Asc</option>
+                    </select>
+                  </div>
+
+                  <div className="tt-field">
+                    <label className="tt-label">Buscar categoría</label>
+                    <input
+                      className="tt-input"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Ej: Alimentación"
+                    />
+                  </div>
+
+                  <div className="tt-compare-filters">
+                    <label className="tt-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={onlyDiffs}
+                        onChange={(e) => setOnlyDiffs(e.target.checked)}
+                      />
+                      <span>Solo diferencias</span>
+                    </label>
+
+                    <div className="tt-field">
+                      <label className="tt-label">Ver</label>
+                      <select
+                        className="tt-select"
+                        value={viewMode}
+                        onChange={(e) => setViewMode(e.target.value)}
                       >
-                        <div className="tt-compare-chart-header">
-                          <span className={isHL ? 'text-primary' : ''}>
-                            {r.categoria}
-                          </span>
-                          <small className="tt-muted">
-                            {viewMode === 'porcentaje'
-                              ? `${r.a.toFixed(1)}% vs ${r.b.toFixed(1)}%`
-                              : `$${Number(r.a).toLocaleString()} vs $${Number(
-                                  r.b
-                                ).toLocaleString()}`}
-                          </small>
-                        </div>
-                        <div className="tt-compare-chart-bars">
-                          <div className="bar bar-a">
-                            <div style={{ width: `${wA}%` }} />
-                          </div>
-                          <div className="bar bar-b">
-                            <div style={{ width: `${wB}%` }} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        <option value="monto">Montos</option>
+                        <option value="porcentaje">Porcentajes</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <p className="tt-muted">No hay datos para graficar.</p>
-              )
-            ) : (
-              <p className="tt-muted">
-                Seleccione dos elementos para visualizar el gráfico.
-              </p>
-            )}
-          </section>
 
-          {/* Tabla de diferencias */}
-          <section className="tt-card-glass">
-            <h3 className="tt-card-h3">Diferencias por categoría</h3>
-            {canCompare ? (
-              diffByCategoria.length ? (
-                <div className="tt-table-wrapper">
-                  <table className="tt-table">
-                    <thead>
-                      <tr>
-                        <th>Categoría</th>
-                        <th>A</th>
-                        <th>B</th>
-                        <th>Δ (B - A)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {diffByCategoria.map((r, i) => (
-                        <tr
-                          key={i}
-                          onClick={() => setHighlightCat(r.categoria)}
-                          className={
-                            highlightCat === r.categoria ? 'is-highlight' : ''
-                          }
-                        >
-                          <td>{r.categoria}</td>
-                          <td>
-                            {viewMode === 'porcentaje'
-                              ? `${r.a.toFixed(1)}%`
-                              : `$${Number(r.a).toLocaleString()}`}
-                          </td>
-                          <td>
-                            {viewMode === 'porcentaje'
-                              ? `${r.b.toFixed(1)}%`
-                              : `$${Number(r.b).toLocaleString()}`}
-                          </td>
-                          <td
-                            className={
-                              r.diff > 0
-                                ? 'text-success'
-                                : r.diff < 0
-                                ? 'text-primary'
-                                : 'tt-muted'
-                            }
-                          >
-                            {viewMode === 'porcentaje'
-                              ? `${r.diff.toFixed(1)}%`
-                              : `$${Number(r.diff).toLocaleString()}`}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="tt-compare-secondary-actions">
+                  <button
+                    className="tt-btn-soft"
+                    onClick={() => setHighlightCat('')}
+                  >
+                    Quitar resaltado
+                  </button>
+                  <button
+                    className="tt-btn-secondary"
+                    onClick={downloadCSV}
+                  >
+                    Exportar CSV
+                  </button>
                 </div>
-              ) : (
-                <p className="tt-muted">No hay datos para comparar.</p>
-              )
-            ) : (
-              <p className="tt-muted">
-                Seleccione dos elementos para ver las diferencias.
-              </p>
-            )}
-          </section>
+              </section>
+
+              {/* Gráfico de barras simplificado */}
+              <section className="tt-card-glass">
+                <h3 className="tt-card-h3">Top categorías</h3>
+                {canCompare ? (
+                  topForChart.length ? (
+                    <div className="tt-compare-chart">
+                      {topForChart.map((r, i) => {
+                        const maxVal = Math.max(r.a, r.b, 1);
+                        const wA = Math.round((r.a / maxVal) * 100);
+                        const wB = Math.round((r.b / maxVal) * 100);
+                        const isHL = highlightCat === r.categoria;
+                        return (
+                          <div
+                            key={i}
+                            className="tt-compare-chart-row"
+                            onMouseEnter={() => setHighlightCat(r.categoria)}
+                            onMouseLeave={() => setHighlightCat('')}
+                          >
+                            <div className="tt-compare-chart-header">
+                              <span className={isHL ? 'text-primary' : ''}>
+                                {r.categoria}
+                              </span>
+                              <small className="tt-muted">
+                                {viewMode === 'porcentaje'
+                                  ? `${r.a.toFixed(1)}% vs ${r.b.toFixed(1)}%`
+                                  : `$${Number(r.a).toLocaleString()} vs $${Number(
+                                      r.b
+                                    ).toLocaleString()}`}
+                              </small>
+                            </div>
+                            <div className="tt-compare-chart-bars">
+                              <div className="bar bar-a">
+                                <div style={{ width: `${wA}%` }} />
+                              </div>
+                              <div className="bar bar-b">
+                                <div style={{ width: `${wB}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="tt-muted">No hay datos para graficar.</p>
+                  )
+                ) : (
+                  <p className="tt-muted">
+                    Seleccione dos elementos para visualizar el gráfico.
+                  </p>
+                )}
+              </section>
+
+              {/* Tabla de diferencias */}
+              <section className="tt-card-glass">
+                <h3 className="tt-card-h3">Diferencias por categoría</h3>
+                {canCompare ? (
+                  diffByCategoria.length ? (
+                    <div className="tt-table-wrapper">
+                      <table className="tt-table">
+                        <thead>
+                          <tr>
+                            <th>Categoría</th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>Δ (B - A)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {diffByCategoria.map((r, i) => (
+                            <tr
+                              key={i}
+                              onClick={() => setHighlightCat(r.categoria)}
+                              className={
+                                highlightCat === r.categoria ? 'is-highlight' : ''
+                              }
+                            >
+                              <td>{r.categoria}</td>
+                              <td>
+                                {viewMode === 'porcentaje'
+                                  ? `${r.a.toFixed(1)}%`
+                                  : `$${Number(r.a).toLocaleString()}`}
+                              </td>
+                              <td>
+                                {viewMode === 'porcentaje'
+                                  ? `${r.b.toFixed(1)}%`
+                                  : `$${Number(r.b).toLocaleString()}`}
+                              </td>
+                              <td
+                                className={
+                                  r.diff > 0
+                                    ? 'text-success'
+                                    : r.diff < 0
+                                    ? 'text-primary'
+                                    : 'tt-muted'
+                                }
+                              >
+                                {viewMode === 'porcentaje'
+                                  ? `${r.diff.toFixed(1)}%`
+                                  : `$${Number(r.diff).toLocaleString()}`}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="tt-muted">No hay datos para comparar.</p>
+                  )
+                ) : (
+                  <p className="tt-muted">
+                    Seleccione dos elementos para ver las diferencias.
+                  </p>
+                )}
+              </section>
+            </>
+          )}
         </div>
       </main>
     </>

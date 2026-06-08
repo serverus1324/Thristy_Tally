@@ -1,7 +1,7 @@
 package com.example.CalcGastosU.controller;
 
 import com.example.CalcGastosU.dto.LoginRequestDTO;
-import com.example.CalcGastosU.entity.Estudiante;
+import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Usuario;
 import com.example.CalcGastosU.service.UsuarioService;
 import org.bson.types.ObjectId;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping(path = "/api/v1/usuarios")
 public class UsuarioController {
@@ -52,13 +53,13 @@ public class UsuarioController {
     @GetMapping("/byusername/{username}")
     public ResponseEntity<?> GetUsuarioByUsername(@PathVariable("username") String username) {
         Optional<Usuario> usuario = usuarioService.GetUsuarioByUsername(username);
-        if(usuario.isPresent()){
+        if (usuario.isPresent()) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", usuario.get());
             response.put("mensaje", "Usuario por username obtenido exitosamente");
             return ResponseEntity.ok(response);
-        }else{
+        } else {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("mensaje", "Usuario no encontrado");
@@ -84,7 +85,7 @@ public class UsuarioController {
 
     @DeleteMapping("/{idUsuario}")
     public ResponseEntity<?> delete(@PathVariable("idUsuario") ObjectId idUsuario) {
-        try{
+        try {
             usuarioService.delete(idUsuario);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -108,21 +109,21 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/estudiante/{idUsuario}")
-    public ResponseEntity<?> getEstudiante(@PathVariable("idUsuario") ObjectId idUsuario) {
-        try{
+    @GetMapping("/perfil/{idUsuario}")
+    public ResponseEntity<?> getPerfil(@PathVariable("idUsuario") ObjectId idUsuario) {
+        try {
             System.out.println(idUsuario);
-            Estudiante estudiante = usuarioService.getEstudiante(idUsuario);
-            System.out.println(estudiante);
+            Perfil perfil = usuarioService.getPerfil(idUsuario);
+            System.out.println(perfil);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", estudiante);
-            response.put("mensaje", "Estudiante del usuario obtenido exitosamente");
+            response.put("data", perfil);
+            response.put("mensaje", "Perfil del usuario obtenido exitosamente");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("mensaje", "Error al obtener estudiante del usuario: " + e.getMessage());
+            errorResponse.put("mensaje", "Error al obtener perfil del usuario: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -135,7 +136,7 @@ public class UsuarioController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("idUsuario", usuario.getId().toString());
-            response.put("idEstudiante", usuario.getIdEstudiante().toString());
+            response.put("idPerfil", usuario.getIdPerfil().toString());
             response.put("mensaje", "Inicio de sesión EXITOSO");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

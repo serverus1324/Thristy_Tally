@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping(path = "/api/v1/presupuestos")
 public class PresupuestoController {
@@ -49,18 +50,18 @@ public class PresupuestoController {
         }
     }
 
-    @GetMapping("/por-estudiante-periodo")
-    public ResponseEntity<?> getByEstudiantePeriodo(
-            @RequestParam("idEstudiante") String idEstudiante,
+    @GetMapping("/por-perfil-periodo")
+    public ResponseEntity<?> getByPerfilPeriodo(
+            @RequestParam("idPerfil") String idPerfil,
             @RequestParam("idPeriodo") String idPeriodo) {
         try {
-            if (!ObjectId.isValid(idEstudiante) || !ObjectId.isValid(idPeriodo)) {
+            if (!ObjectId.isValid(idPerfil) || !ObjectId.isValid(idPeriodo)) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
-                        "mensaje", "Formato de idEstudiante o idPeriodo inválido"));
+                        "mensaje", "Formato de idPerfil o idPeriodo inválido"));
             }
             Optional<Presupuesto> presupuesto = presupuestoService
-                    .findByIdEstudianteAndIdPeriodo(new ObjectId(idEstudiante), new ObjectId(idPeriodo));
+                    .findByIdPerfilAndIdPeriodo(new ObjectId(idPerfil), new ObjectId(idPeriodo));
             if (presupuesto.isPresent()) {
                 return ResponseEntity.ok(Map.of(
                         "success", true,
@@ -69,7 +70,7 @@ public class PresupuestoController {
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "success", false,
-                    "mensaje", "Presupuesto no encontrado para estudiante y período"));
+                    "mensaje", "Presupuesto no encontrado para perfil y período"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "success", false,
@@ -86,7 +87,6 @@ public class PresupuestoController {
         response.put("mensaje", "Estado de presupuesto excedido obtenido exitosamente");
         return ResponseEntity.ok(response);
     }
-
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody PresupuestoDTO dto) {
@@ -141,15 +141,7 @@ public class PresupuestoController {
         }
     }
 
-    /**
-     * Endpoint para actualizar la configuración de cálculo de un presupuesto existente.
-     * Específicamente frecuenciaCalculo y porcentajeAumento.
-     *
-     * @param id El ID del presupuesto a actualizar.
-     * @param dto DTO con los campos a actualizar.
-     * @return ResponseEntity con el presupuesto actualizado o un error.
-     */
-    @PatchMapping("/{id}/configuracion") // Ruta sugerida por el frontend
+    @PatchMapping("/{id}/configuracion")
     public ResponseEntity<?> updatePresupuestoConfiguracion(
             @PathVariable ObjectId id,
             @RequestBody PresupuestoConfiguracionUpdateDTO dto) {
@@ -160,10 +152,10 @@ public class PresupuestoController {
             response.put("data", presupuestoActualizado);
             response.put("mensaje", "Configuración del presupuesto actualizada exitosamente.");
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) { // Captura la excepción de "no encontrado" del servicio
+        } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("mensaje", e.getMessage()); // Mensaje de error del servicio
+            errorResponse.put("mensaje", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();

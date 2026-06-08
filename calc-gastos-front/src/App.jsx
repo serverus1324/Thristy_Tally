@@ -12,6 +12,9 @@ import EditarPresupuesto from './pages/presupuesto/EditarPresupuesto';
 import ViewEditarDatos from './pages/usuario/ViewEditarDatos';
 import CompararPresupuestos from './pages/comparar/CompararPresupuestos';
 import Prediction from './pages/Prediction/Prediction';
+import ForgotPassword from './pages/recover-password/ForgotPassword';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -23,15 +26,24 @@ function App() {
                     <Route path="/" element={<ViewInicio />} />
                     <Route path="/login" element={<ViewLogin />} />
                     <Route path="/signup" element={<ViewSignup />} />
+                    <Route path="/recover-password" element={<ForgotPassword />} />
                     <Route path="/home" element={<ViewHome />} />
                     <Route path="/dashboard" element={<ViewDashboard />} />
                     <Route path="/necesidad-presupuesto" element={<ViewNecesidadPresupuesto />} /> 
                     <Route path="/presupuesto/:id/editar" element={<EditarPresupuesto />} />
-                <Route path="/crear-gasto" element={<ViewNecesidadPresupuesto />} />
-                <Route path="/editar-datos" element={<ViewEditarDatos />} />
-                <Route path="/comparar-presupuestos" element={<CompararPresupuestos />} />
-                <Route path="/prediccion-necesidades" element={<Prediction />} />
-                <Route path="/prediction" element={<Prediction />} />
+                    <Route path="/crear-gasto" element={<ViewNecesidadPresupuesto />} />
+                    <Route path="/editar-datos" element={<ViewEditarDatos />} />
+                    <Route path="/comparar-presupuestos" element={<CompararPresupuestos />} />
+                    <Route path="/prediccion-necesidades" element={<Prediction />} />
+                    <Route path="/prediction" element={<Prediction />} />
+                    <Route 
+                        path="/admin" 
+                        element={
+                            <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
+                                <AdminDashboard />
+                            </ProtectedRoute>
+                        } 
+                    />
                 </Routes>
             </div>
             <ToastContainer position="top-right" autoClose={3000} newestOnTop closeOnClick pauseOnFocusLoss={false} />

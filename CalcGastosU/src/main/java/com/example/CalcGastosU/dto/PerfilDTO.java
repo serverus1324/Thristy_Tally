@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @NoArgsConstructor
 @Data
-public class EstudianteDTO implements Serializable {
+public class PerfilDTO implements Serializable {
 
     private ObjectId id;
     private String nombre;

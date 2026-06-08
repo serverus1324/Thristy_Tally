@@ -3,7 +3,6 @@ package com.example.CalcGastosU.controller;
 import com.example.CalcGastosU.dto.PeriodoDTO;
 import com.example.CalcGastosU.entity.Periodo;
 import com.example.CalcGastosU.repository.PeriodoRepository;
-import com.example.CalcGastosU.service.EstudianteService;
 import com.example.CalcGastosU.service.PeriodoService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping(path = "/api/v1/periodos")
 public class PeriodoController {
@@ -25,9 +25,6 @@ public class PeriodoController {
 
     @Autowired
     private PeriodoRepository periodoRepo;
-
-    @Autowired
-    private EstudianteService estudianteService;
 
     @GetMapping
     public ResponseEntity<?> getAll() {
@@ -75,7 +72,7 @@ public class PeriodoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable ObjectId id, @RequestBody PeriodoDTO dto) {
-        try{
+        try {
             Periodo actualizado = periodoService.update(id, dto);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -92,12 +89,12 @@ public class PeriodoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable ObjectId id) {
-        try{
+        try {
             periodoService.delete(id);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("mensaje", "Periodo eliminado exitosamente");
-            return ResponseEntity.ok(response); // 204 No Content
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
@@ -107,25 +104,19 @@ public class PeriodoController {
     }
 
     /**
-     * GET /periodos/{idEstudiante}/por-estudiante
-     * Devuelve todos los periodos de un estudiante dado su id.
+     * GET /periodos/{idPerfil}/por-perfil
+     * Devuelve todos los periodos de un perfil dado su id.
      */
-    @GetMapping("/{idEstudiante}/por-estudiante")
-    public ResponseEntity<List<Periodo>> getPeriodosPorEstudiante(
-            @PathVariable String idEstudiante) {
+    @GetMapping("/{idPerfil}/por-perfil")
+    public ResponseEntity<List<Periodo>> getPeriodosPorPerfil(
+            @PathVariable String idPerfil) {
 
-        // Validación básica del ObjectId
-        if (!ObjectId.isValid(idEstudiante)) {
+        if (!ObjectId.isValid(idPerfil)) {
             return ResponseEntity.badRequest().build();
         }
 
-        ObjectId oid = new ObjectId(idEstudiante);
-        List<Periodo> periodos = periodoRepo.findByIdEstudiante(oid);
-
-        if (periodos.isEmpty()) {
-            // O bien devolver 204 No Content, según convención
-            return ResponseEntity.ok().body(periodos);
-        }
+        ObjectId oid = new ObjectId(idPerfil);
+        List<Periodo> periodos = periodoRepo.findByIdPerfil(oid);
 
         return ResponseEntity.ok(periodos);
     }

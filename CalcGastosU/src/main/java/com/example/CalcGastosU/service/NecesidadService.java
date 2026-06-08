@@ -2,11 +2,11 @@ package com.example.CalcGastosU.service;
 
 import com.example.CalcGastosU.dto.NecesidadDTO;
 import com.example.CalcGastosU.dto.ResumenPresupuestoDTO;
-import com.example.CalcGastosU.entity.Estudiante;
+import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Necesidad;
 import com.example.CalcGastosU.entity.Periodo;
 import com.example.CalcGastosU.entity.Presupuesto;
-import com.example.CalcGastosU.repository.EstudianteRepository;
+import com.example.CalcGastosU.repository.PerfilRepository;
 import com.example.CalcGastosU.repository.NecesidadRepository;
 import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.repository.PresupuestoRepository;
@@ -25,7 +25,7 @@ public class NecesidadService {
     private NecesidadRepository necesidadRepository;
 
     @Autowired
-    private EstudianteRepository estudianteRepository;
+    private PerfilRepository perfilRepository;
 
     @Autowired
     private PeriodoRepository periodoRepository;
@@ -43,47 +43,35 @@ public class NecesidadService {
 
     public List<Necesidad> save(List<NecesidadDTO> dtoList) {
         if (dtoList == null || dtoList.isEmpty()) {
-            return new ArrayList<>(); // O lanzar una excepción si una lista vacía no es válida
+            return new ArrayList<>();
         }
 
         List<Necesidad> necesidadesGuardadas = new ArrayList<>();
 
         for (NecesidadDTO dto : dtoList) {
-            // Validar la existencia de las entidades referenciadas (Estudiante, Periodo, etc.)
-            // Se asume que los IDs en el DTO son ObjectId o Strings convertibles a ObjectId
-            Estudiante estudiante = estudianteRepository.findById(dto.getIdEstudiante())
-                    .orElseThrow(() -> new RuntimeException("Estudiante no encontrado con ID: " + dto.getIdEstudiante()));
+            Perfil perfil = perfilRepository.findById(dto.getIdPerfil())
+                    .orElseThrow(() -> new RuntimeException("Perfil no encontrado con ID: " + dto.getIdPerfil()));
 
             Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                     .orElseThrow(() -> new RuntimeException("Periodo no encontrado con ID: " + dto.getIdPeriodo()));
 
-            // Opcional: Validar Presupuesto si es necesario
-            if (dto.getIdPresupuesto() != null) {
-                Presupuesto presupuesto = presupuestoRepository.findById(dto.getIdPresupuesto())
-                        .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado con ID: " + dto.getIdPresupuesto()));
-                // Puedes usar la entidad presupuesto si la entidad Necesidad la requiere
-            }
-
             Necesidad necesidadEntity = new Necesidad();
             necesidadEntity.setDescripcion(dto.getDescripcion());
-            necesidadEntity.setMonto(dto.getMonto() != null ? dto.getMonto() : 0.0); // Valor por defecto si es nulo
-            necesidadEntity.setEsPredeterminada(dto.getEsPredeterminada() != null ? dto.getEsPredeterminada() : 0); // 0=false, 1=true
+            necesidadEntity.setMonto(dto.getMonto() != null ? dto.getMonto() : 0.0);
+            necesidadEntity.setEsPredeterminada(dto.getEsPredeterminada() != null ? dto.getEsPredeterminada() : 0);
 
-            necesidadEntity.setIdEstudiante(estudiante.getId()); // Asigna el ObjectId del Estudiante
-            necesidadEntity.setIdPeriodo(periodo.getId());     // Asigna el ObjectId del Periodo
+            necesidadEntity.setIdPerfil(perfil.getId());
+            necesidadEntity.setIdPeriodo(periodo.getId());
 
             if (dto.getIdPresupuesto() != null) {
-                necesidadEntity.setIdPresupuesto(dto.getIdPresupuesto()); // Asigna el ObjectId del Presupuesto
+                necesidadEntity.setIdPresupuesto(dto.getIdPresupuesto());
             }
-            // El campo 'id' de Necesidad se genera automáticamente al guardar en MongoDB.
-            // El campo 'excedePresupuesto' se calcularía, no se establecería desde el DTO al crear.
 
             necesidadesGuardadas.add(necesidadRepository.save(necesidadEntity));
         }
 
         return necesidadesGuardadas;
     }
-
 
     public Necesidad asignarPresupuestoANecesidad(ObjectId idNecesidad, ObjectId idPresupuesto) {
         Necesidad necesidad = necesidadRepository.findById(idNecesidad)
@@ -96,8 +84,8 @@ public class NecesidadService {
         return necesidadRepository.save(necesidad);
     }
 
-    public List<Necesidad> findByIdEstudianteAndIdPeriodo(ObjectId idEstudiante, ObjectId idPeriodo) {
-        return necesidadRepository.findByIdEstudianteAndIdPeriodo(idEstudiante, idPeriodo);
+    public List<Necesidad> findByIdPerfilAndIdPeriodo(ObjectId idPerfil, ObjectId idPeriodo) {
+        return necesidadRepository.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo);
     }
 
     public List<Necesidad> findByIdPresupuesto(ObjectId idPresupuesto) {
@@ -109,7 +97,6 @@ public class NecesidadService {
             throw new IllegalArgumentException("Se requiere el ID de la necesidad para actualizar");
         }
 
-        // Cargar la necesidad existente para preservar relaciones
         Optional<Necesidad> existenteOpt = necesidadRepository.findById(dto.getId());
         if (existenteOpt.isEmpty()) {
             throw new RuntimeException("Necesidad no encontrada para actualizar");
@@ -117,7 +104,6 @@ public class NecesidadService {
 
         Necesidad necesidad = existenteOpt.get();
 
-        // Actualizar solo campos permitidos, preservando relaciones
         if (dto.getDescripcion() != null) {
             necesidad.setDescripcion(dto.getDescripcion());
         }
@@ -128,9 +114,8 @@ public class NecesidadService {
             necesidad.setEsPredeterminada(dto.getEsPredeterminada());
         }
 
-        // Si se envían referencias explícitas válidas, actualizarlas; de lo contrario, preservarlas
-        if (dto.getIdEstudiante() != null) {
-            necesidad.setIdEstudiante(dto.getIdEstudiante());
+        if (dto.getIdPerfil() != null) {
+            necesidad.setIdPerfil(dto.getIdPerfil());
         }
         if (dto.getIdPeriodo() != null) {
             necesidad.setIdPeriodo(dto.getIdPeriodo());
@@ -141,31 +126,30 @@ public class NecesidadService {
 
         return necesidadRepository.save(necesidad);
     }
+
     public Necesidad guardarConValidacionPresupuesto(NecesidadDTO dto, boolean forzarGuardado) {
-        Estudiante estudiante = estudianteRepository.findById(dto.getIdEstudiante())
-                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado"));
+        Perfil perfil = perfilRepository.findById(dto.getIdPerfil())
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
 
         Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                 .orElseThrow(() -> new RuntimeException("Periodo no encontrado"));
 
         Presupuesto presupuesto = presupuestoRepository.findById(dto.getIdPresupuesto())
-                .orElse(null); // puede ser null
+                .orElse(null);
 
         Necesidad necesidad = new Necesidad();
         necesidad.setDescripcion(dto.getDescripcion());
         necesidad.setMonto(dto.getMonto());
         necesidad.setEsPredeterminada(dto.getEsPredeterminada());
-        necesidad.setIdEstudiante(estudiante.getId());
+        necesidad.setIdPerfil(perfil.getId());
         necesidad.setIdPeriodo(periodo.getId());
         necesidad.setIdPresupuesto(dto.getIdPresupuesto());
 
         if (presupuesto == null) {
-            // CASO 1: No hay presupuesto
             necesidad.setExcedePresupuesto(false);
             return necesidadRepository.save(necesidad);
         }
 
-        // CASO 2: Sí hay presupuesto
         List<Necesidad> necesidades = necesidadRepository.findByIdPresupuesto(presupuesto.getId());
         double totalExistente = necesidades.stream()
                 .mapToDouble(n -> n.getMonto() != null ? n.getMonto() : 0.0)
@@ -184,9 +168,10 @@ public class NecesidadService {
 
         return necesidadRepository.save(necesidad);
     }
-    public ResumenPresupuestoDTO obtenerResumenPorPeriodo(ObjectId idEstudiante, ObjectId idPeriodo) {
+
+    public ResumenPresupuestoDTO obtenerResumenPorPeriodo(ObjectId idPerfil, ObjectId idPeriodo) {
         Presupuesto presupuesto = presupuestoRepository
-                .findByIdEstudianteAndIdPeriodo(idEstudiante, idPeriodo)
+                .findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
         List<Necesidad> necesidades = necesidadRepository.findByIdPresupuesto(presupuesto.getId());

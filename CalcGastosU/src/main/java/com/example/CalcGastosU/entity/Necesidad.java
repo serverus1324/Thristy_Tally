@@ -34,9 +34,9 @@ public class Necesidad {
     @BsonProperty
     private Boolean excedePresupuesto = false;
 
-    @BsonProperty("idEstudiante")
+    @BsonProperty("idPerfil")
     @JsonSerialize(using = ObjectIdSerializer.class)
-    private ObjectId idEstudiante;
+    private ObjectId idPerfil;
 
     @BsonProperty("idPeriodo")
     @JsonSerialize(using = ObjectIdSerializer.class)
@@ -87,6 +87,7 @@ public class Necesidad {
         this.monto = monto;
         return this;
     }
+
     @JsonProperty("monto")
     public Double getMonto() {
         return monto;
@@ -118,24 +119,25 @@ public class Necesidad {
         this.excedePresupuesto = excedePresupuesto;
     }
 
-    public Necesidad idEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = idEstudiante;
+    public Necesidad idPerfil(ObjectId idPerfil) {
+        this.idPerfil = idPerfil;
         return this;
     }
 
-    @JsonProperty("idEstudiante")
-    public ObjectId getIdEstudiante() {
-        return idEstudiante;
+    @JsonProperty("idPerfil")
+    public ObjectId getIdPerfil() {
+        return idPerfil;
     }
 
-    public void setIdEstudiante(ObjectId idEstudiante) {
-        this.idEstudiante = idEstudiante;
+    public void setIdPerfil(ObjectId idPerfil) {
+        this.idPerfil = idPerfil;
     }
 
     public Necesidad idPeriodo(ObjectId idPeriodo) {
         this.idPeriodo = idPeriodo;
         return this;
     }
+
     @JsonProperty("idPeriodo")
     public ObjectId getIdPeriodo() {
         return idPeriodo;
@@ -149,6 +151,7 @@ public class Necesidad {
         this.idPresupuesto = idPresupuesto;
         return this;
     }
+
     @JsonProperty("idPresupuesto")
     public ObjectId getIdPresupuesto() {
         return idPresupuesto;
@@ -157,6 +160,7 @@ public class Necesidad {
     public void setIdPresupuesto(ObjectId idPresupuesto) {
         this.idPresupuesto = idPresupuesto;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -171,14 +175,14 @@ public class Necesidad {
                 Objects.equals(this.esPredeterminada, necesidades.esPredeterminada) &&
                 Objects.equals(this.monto, necesidades.monto) &&
                 Objects.equals(this.tipo, necesidades.tipo) &&
-                Objects.equals(this.idEstudiante, necesidades.idEstudiante) &&
+                Objects.equals(this.idPerfil, necesidades.idPerfil) &&
                 Objects.equals(this.idPeriodo, necesidades.idPeriodo) &&
                 Objects.equals(this.idPresupuesto, necesidades.idPresupuesto);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, id, descripcion, esPredeterminada, monto, tipo, idEstudiante, idPeriodo, idPresupuesto);
+        return Objects.hash(id, id, descripcion, esPredeterminada, monto, tipo, idPerfil, idPeriodo, idPresupuesto);
     }
 
     @Override
@@ -191,7 +195,7 @@ public class Necesidad {
         sb.append("    esPredeterminada: ").append(toIndentedString(esPredeterminada)).append("\n");
         sb.append("    monto: ").append(toIndentedString(monto)).append("\n");
         sb.append("    tipo: ").append(toIndentedString(tipo)).append("\n");
-        sb.append("    idEstudiante: ").append(toIndentedString(idEstudiante)).append("\n");
+        sb.append("    idPerfil: ").append(toIndentedString(idPerfil)).append("\n");
         sb.append("    idPeriodo: ").append(toIndentedString(idPeriodo)).append("\n");
         sb.append("    idPresupuesto: ").append(toIndentedString(idPresupuesto)).append("\n");
         sb.append("}");

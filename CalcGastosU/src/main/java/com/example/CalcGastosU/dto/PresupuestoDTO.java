@@ -17,7 +17,7 @@ public class PresupuestoDTO implements Serializable {
     private Double monto;
     private String descripcion;
     @JsonDeserialize(using = ObjectIdDeserializer.class)
-    private ObjectId idEstudiante;
+    private ObjectId idPerfil;
     @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId idPeriodo;
 }

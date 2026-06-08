@@ -55,7 +55,7 @@ const EditarPresupuesto = () => {
         id: presupuestoId,
         descripcion,
         monto: parseFloat(monto),
-        idEstudiante: presupuesto.idEstudiante,
+        idPerfil: presupuesto.idPerfil,
         idPeriodo: presupuesto.idPeriodo,
       };
       await putData(`presupuestos/${presupuestoId}`, body);
@@ -85,7 +85,7 @@ const EditarPresupuesto = () => {
         descripcion: nuevaNecesidad.descripcion,
         monto: parseFloat(nuevaNecesidad.monto),
         esPredeterminada: 0,
-        idEstudiante: presupuesto.idEstudiante,
+        idPerfil: presupuesto.idPerfil,
         idPeriodo: presupuesto.idPeriodo,
         idPresupuesto: presupuestoId,
       }];
@@ -146,7 +146,7 @@ const EditarPresupuesto = () => {
 
       await deleteData(`presupuestos/${presupuestoId}`);
       toast.success('Presupuesto y necesidades asociadas eliminados');
-      navigate('/dashboard', { state: { idEstudiante: presupuesto.idEstudiante } });
+      navigate('/dashboard', { state: { idPerfil: presupuesto.idPerfil } });
     } catch (e) {
       console.error('Error al eliminar presupuesto:', e);
       toast.error('Error al eliminar presupuesto: ' + (e?.message || 'Error desconocido'));
@@ -174,8 +174,8 @@ const EditarPresupuesto = () => {
               <button
                 className="tt-btn-outline tt-btn-outline-sm"
                 onClick={() => {
-                  if (presupuesto?.idEstudiante) {
-                    navigate('/dashboard', { state: { idEstudiante: presupuesto.idEstudiante } });
+                  if (presupuesto?.idPerfil) {
+                    navigate('/dashboard', { state: { idPerfil: presupuesto.idPerfil } });
                   } else {
                     navigate('/dashboard');
                   }
@@ -226,7 +226,7 @@ const EditarPresupuesto = () => {
 
                 <button
                   className="tt-btn-outline"
-                  onClick={() => navigate('/dashboard', { state: { idEstudiante: presupuesto.idEstudiante } })}
+                  onClick={() => navigate('/dashboard', { state: { idPerfil: presupuesto.idPerfil } })}
                   disabled={loading}
                 >
                   Volver al Dashboard

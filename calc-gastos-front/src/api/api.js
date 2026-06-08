@@ -251,4 +251,44 @@ const API_BASE_URL = '/api/v1';
         return handleResponse(response);
     }
 
+    // ===== Auth & Password Recovery =====
+    const AUTH_API_BASE = '/api/auth';
+    const ADMIN_API_BASE = '/api/admin';
+
+    export async function forgotPassword(email) {
+        const route = `${AUTH_API_BASE}/forgot-password`;
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        return handleResponse(response);
+    }
+
+    export async function verifyCode(email, codigo) {
+        const route = `${AUTH_API_BASE}/verify-code`;
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, codigo })
+        });
+        return handleResponse(response);
+    }
+
+    export async function resetPassword(email, codigo, nuevaPassword) {
+        const route = `${AUTH_API_BASE}/reset-password`;
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, codigo, nuevaPassword })
+        });
+        return handleResponse(response);
+    }
+
+    export async function getAdminDashboardMetrics() {
+        const route = `${ADMIN_API_BASE}/dashboard-metrics`;
+        const response = await fetch(route, { method: 'GET' });
+        return handleResponse(response);
+    }
+
 

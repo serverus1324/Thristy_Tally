@@ -2,23 +2,64 @@ import { Link } from "react-router-dom";
 import "./inicio.css";
 
 const ViewInicio = () => {
+  const useCases = [
+    {
+      icon: "🎓",
+      title: "Estudiantes",
+      description: "Controla tus gastos de pensión, comida, transporte y materiales académicos para evitar desbalances en tu presupuesto mensual.",
+    },
+    {
+      icon: "💼",
+      title: "Trabajadores",
+      description: "Organiza tus gastos fijos, ahorros y gastos personales para alcanzar tus metas financieras a mediano y largo plazo.",
+    },
+    {
+      icon: "🛠️",
+      title: "Independientes",
+      description: "Gestiona ingresos variables, gastos operativos y ahorros para impuestos de forma clara y organizada.",
+    },
+    {
+      icon: "🏢",
+      title: "Empresarios",
+      description: "Monitorea gastos de negocio, inversionistas y flujo de caja para tomar decisiones empresariales más inteligentes.",
+    },
+  ];
+
+  const faqs = [
+    {
+      question: "¿Es gratis usar Thrifty Tally?",
+      answer: "¡Sí! Nuestra plataforma es completamente gratuita para todos los usuarios. No hay planes premium ni costos ocultos.",
+    },
+    {
+      question: "¿Puedo usar Thrifty Tally desde cualquier dispositivo?",
+      answer: "Claro que sí! Es responsive y funciona perfectamente en celulares, tablets y computadoras.",
+    },
+    {
+      question: "¿Mis datos están seguros?",
+      answer: "Absolutamente! Almacenamos tu información de forma segura y nunca compartimos tus datos con terceros sin tu consentimiento.",
+    },
+    {
+      question: "¿Necesito experiencia en finanzas?",
+      answer: "Para nada! Hemos diseñado la plataforma para que sea intuitiva y fácil de usar, incluso si nunca has gestionado un presupuesto.",
+    },
+  ];
+
   return (
     <>
       {/* HEADER */}
-      <header className="home-header">
-        <div className="container d-flex align-items-center justify-content-between">
-          <div className="home-logo">
+      <header className="hero-header">
+        <div className="hero-header-inner">
+          <Link to="/" className="hero-logo">
             Thrifty <span>Tally</span>
-          </div>
-
-          <nav className="home-nav d-none d-md-flex align-items-center gap-4">
-            <a href="#como-funciona" className="home-nav-link">
-              Cómo funciona
-            </a>
-            <a href="#beneficios" className="home-nav-link">
-              Beneficios
-            </a>
-            <Link to="/login" className="btn btn-outline-primary btn-sm home-nav-cta">
+          </Link>
+          <nav className="hero-nav">
+            <a href="#mision-vision" className="hero-nav-link">Misión & Visión</a>
+            <a href="#casos" className="hero-nav-link">Casos de uso</a>
+            <a href="#preguntas" className="hero-nav-link">Preguntas</a>
+            <Link to="/signup" className="hero-nav-cta-secondary">
+              Registrarse
+            </Link>
+            <Link to="/login" className="hero-nav-cta">
               Iniciar sesión
             </Link>
           </nav>
@@ -26,135 +67,132 @@ const ViewInicio = () => {
       </header>
 
       {/* HERO PRINCIPAL */}
-      <main className="home-hero">
-        <div className="container">
-          <div className="row align-items-center">
-            {/* Columna izquierda: texto y botones */}
-            <div className="col-lg-6 mb-5 mb-lg-0">
-              <span className="home-chip">Finanzas para estudiantes</span>
-
-              <h1 className="home-title">
-                Tu compañero financiero
-                <br />
-                universitario
-              </h1>
-
-              <p className="home-subtitle">
-                Una herramienta diseñada para estudiantes universitarios que te
-                ayuda a organizar tus necesidades, planificar tu presupuesto y
-                tomar decisiones financieras más inteligentes para que puedas
-                enfocarte en tus estudios.
-              </p>
-
-              <div className="d-flex flex-wrap gap-3 mt-3">
-                <Link
-                  to="/login"
-                  className="btn btn-primary btn-lg home-btn-main"
-                >
-                  Inicia sesión
-                </Link>
-
-                <Link
-                  to="/signup"
-                  className="btn btn-outline-primary btn-lg home-btn-secondary"
-                >
-                  Regístrate
-                </Link>
-              </div>
-
-              <ul className="home-benefits" id="beneficios">
-                <li>✔ Control de gastos mes a mes</li>
-                <li>✔ Clasificación de necesidades prioritarias</li>
-                <li>✔ Visualización clara de tu presupuesto disponible</li>
-              </ul>
+      <main className="hero-main">
+        <div className="hero-blur-1"></div>
+        <div className="hero-blur-2"></div>
+        <div className="hero-main-inner">
+          <div className="hero-main-content">
+            <div className="hero-badge">✨ Bienvenido a tu futuro financiero</div>
+            <h1 className="hero-title">
+              Gestiona tu dinero
+              <br />
+              con <span>simplicidad</span> y <span>estilo</span>
+            </h1>
+            <p className="hero-subtitle">
+              La plataforma financiera perfecta para estudiantes, trabajadores, independientes y empresarios.
+              Organiza tus gastos, planifica tu presupuesto y alcanza tus metas.
+            </p>
+            <div className="hero-actions">
+              <Link to="/signup" className="hero-primary-btn">
+                Crear cuenta gratis
+              </Link>
+              <Link to="/login" className="hero-secondary-btn">
+                Iniciar sesión
+              </Link>
             </div>
-
-            {/* Columna derecha: personajes + tarjeta + burbujas */}
-            <div className="col-lg-5 offset-lg-1">
-              <div className="hero-visual">
-                {/* Dos personajes */}
-                <div className="hero-illustrations">
-                  <img
-                    src="/img/estudiante 1.png"
-                    alt="Estudiante usando el celular"
-                    className="hero-illustration hero-illustration--boy"
-                  />
-                  <img
-                    src="/img/estudiante 2.png"
-                    alt="Estudiante usando su laptop"
-                    className="hero-illustration hero-illustration--girl"
-                  />
-                </div>
-
-                {/* Tarjeta de resumen flotando */}
-                <div className="hero-card hero-card--floating">
-                  <p className="hero-card-label">Resumen mensual</p>
-                  <p className="hero-card-amount">$ 450.000</p>
-
-                  <div className="hero-card-line">
-                    <span>Asignado</span>
-                    <span>$ 1.000.000</span>
-                  </div>
-                  <div className="hero-card-line">
-                    <span>Gastado</span>
-                    <span>$ 550.000</span>
-                  </div>
-                  <div className="hero-card-line">
-                    <span>Disponible</span>
-                    <span>$ 450.000</span>
-                  </div>
-                </div>
-
-                {/* Burbujas flotantes */}
-                <div className="hero-bubble hero-bubble--1 hero-bubble--floating">
-                  Comida
-                </div>
-                <div className="hero-bubble hero-bubble--2 hero-bubble--floating">
-                  Transporte
-                </div>
-                <div className="hero-bubble hero-bubble--3 hero-bubble--floating">
-                  Ahorro
-                </div>
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <p className="hero-stat-number">+1k</p>
+                <p className="hero-stat-label">Usuarios felices</p>
+              </div>
+              <div className="hero-stat">
+                <p className="hero-stat-number">+50k</p>
+                <p className="hero-stat-label">Gastos registrados</p>
+              </div>
+              <div className="hero-stat">
+                <p className="hero-stat-number">100%</p>
+                <p className="hero-stat-label">Gratis</p>
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* FRANJA DE BENEFICIOS RÁPIDOS */}
-      <section className="home-stats" id="como-funciona">
-        <div className="container">
-          <div className="row g-4">
-            <div className="col-md-4">
-              <div className="home-stat-card">
-                <p className="home-stat-label">1. Registra tus necesidades</p>
-                <p className="home-stat-text">
-                  Define qué gastos son realmente importantes para tu día a día
-                  universitario.
-                </p>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="home-stat-card">
-                <p className="home-stat-label">2. Crea un presupuesto claro</p>
-                <p className="home-stat-text">
-                  Asigna montos a cada categoría y visualiza cuánto puedes gastar
-                  sin excederte.
-                </p>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="home-stat-card">
-                <p className="home-stat-label">3. Toma mejores decisiones</p>
-                <p className="home-stat-text">
-                  Observa tu resumen mensual y ajusta tus hábitos financieros a
-                  tiempo.
-                </p>
-              </div>
-            </div>
+      {/* MISION & VISION */}
+      <section id="mision-vision" className="mision-vision-section">
+        <div className="mision-vision-inner">
+          <div className="mv-card mv-card-mision">
+            <div className="mv-icon">🎯</div>
+            <h2 className="mv-title">Misión</h2>
+            <p className="mv-text">
+              Empoderar a las personas a tomar el control de su vida financiera mediante herramientas
+              intuitivas, visuales y accesibles para todos.
+            </p>
+          </div>
+          <div className="mv-card mv-card-vision">
+            <div className="mv-icon">🚀</div>
+            <h2 className="mv-title">Visión</h2>
+            <p className="mv-text">
+              Ser la plataforma líder en gestión financiera personal en América Latina, transformando
+              la relación de las personas con su dinero.
+            </p>
           </div>
         </div>
       </section>
+
+      {/* CASOS DE USO */}
+      <section id="casos" className="use-cases-section">
+        <div className="use-cases-inner">
+          <div className="section-header">
+            <span className="section-badge">Casos de uso</span>
+            <h2 className="section-title">¿Para quién es perfecto?</h2>
+            <p className="section-subtitle">
+              Hemos diseñado Thrifty Tally para adaptarse a todas las etapas de tu vida financiera.
+            </p>
+          </div>
+          <div className="use-cases-grid">
+            {useCases.map((useCase, index) => (
+              <div key={index} className="use-case-card">
+                <div className="use-case-icon">{useCase.icon}</div>
+                <h3 className="use-case-title">{useCase.title}</h3>
+                <p className="use-case-description">{useCase.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PREGUNTAS FRECUENTES */}
+      <section id="preguntas" className="faq-section">
+        <div className="faq-inner">
+          <div className="section-header">
+            <span className="section-badge">Preguntas frecuentes</span>
+            <h2 className="section-title">Todo lo que necesitas saber</h2>
+          </div>
+          <div className="faq-grid">
+            {faqs.map((faq, index) => (
+              <div key={index} className="faq-item">
+                <h3 className="faq-question">{faq.question}</h3>
+                <p className="faq-answer">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="cta-section">
+        <div className="cta-inner">
+          <div className="cta-blur"></div>
+          <h2 className="cta-title">¿Listo para empezar?</h2>
+          <p className="cta-text">
+            Crea tu cuenta en menos de un minuto y comienza tu camino hacia la libertad financiera.
+          </p>
+          <Link to="/signup" className="cta-button">
+            Empezar ahora
+          </Link>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="footer-section">
+        <div className="footer-inner">
+          <div className="footer-brand">
+            Thrifty <span>Tally</span>
+          </div>
+          <p className="footer-copy">© 2025 Thrifty Tally. Todos los derechos reservados.</p>
+        </div>
+      </footer>
     </>
   );
 };

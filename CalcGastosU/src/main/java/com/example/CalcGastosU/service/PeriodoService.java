@@ -24,13 +24,12 @@ public class PeriodoService {
         return periodoRepository.findById(id);
     }
 
-
     public Periodo save(PeriodoDTO dto) {
         Periodo periodo = new Periodo();
         periodo.setNombre(dto.getNombre());
         periodo.setFechaInicio(dto.getFechaInicio());
         periodo.setFechaFin(dto.getFechaFin());
-        periodo.setIdEstudiante(dto.getIdEstudiante());
+        periodo.setIdPerfil(dto.getIdPerfil());
         return periodoRepository.save(periodo);
     }
 
@@ -49,5 +48,3 @@ public class PeriodoService {
         periodoRepository.deleteById(id);
     }
 }
-
-

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface NecesidadRepository extends MongoRepository<Necesidad, ObjectId> {
     List<Necesidad> findByIdPresupuesto(ObjectId idPresupuesto);
-    List<Necesidad> findByIdEstudianteAndIdPeriodo(ObjectId idEstudiante, ObjectId idPeriodo);
+    List<Necesidad> findByIdPerfilAndIdPeriodo(ObjectId idPerfil, ObjectId idPeriodo);
 }

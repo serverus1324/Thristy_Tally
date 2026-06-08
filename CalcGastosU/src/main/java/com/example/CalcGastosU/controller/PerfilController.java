@@ -1,8 +1,8 @@
 package com.example.CalcGastosU.controller;
 
-import com.example.CalcGastosU.dto.EstudianteDTO;
-import com.example.CalcGastosU.entity.Estudiante;
-import com.example.CalcGastosU.service.EstudianteService;
+import com.example.CalcGastosU.dto.PerfilDTO;
+import com.example.CalcGastosU.entity.Perfil;
+import com.example.CalcGastosU.service.PerfilService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,85 +16,85 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
-@RequestMapping(path = "/api/v1/estudiantes/")
-public class EstudianteController {
+@RequestMapping(path = "/api/v1/perfiles")
+public class PerfilController {
 
     @Autowired
-    private EstudianteService estudianteService;
+    private PerfilService perfilService;
 
     @GetMapping
-    public ResponseEntity<?> getEstudiantes() {
-        List<Estudiante> estudiantes = estudianteService.getEstudiantes();
+    public ResponseEntity<?> getPerfiles() {
+        List<Perfil> perfiles = perfilService.getPerfiles();
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", estudiantes);
-        response.put("mensaje", "Lista de estudiantes obtenida exitosamente");
+        response.put("data", perfiles);
+        response.put("mensaje", "Lista de perfiles obtenida exitosamente");
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idEstudiante}")
-    public ResponseEntity<?> getEstudiante(@PathVariable("idEstudiante") ObjectId idEstudiante) {
-        Optional<Estudiante> estudiante = estudianteService.getEstudiante(idEstudiante);
-        if (estudiante.isPresent()) {
+    @GetMapping("/{idPerfil}")
+    public ResponseEntity<?> getPerfil(@PathVariable("idPerfil") ObjectId idPerfil) {
+        Optional<Perfil> perfil = perfilService.getPerfil(idPerfil);
+        if (perfil.isPresent()) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", estudiante.get());
-            response.put("mensaje", "Estudiante obtenido exitosamente");
+            response.put("data", perfil.get());
+            response.put("mensaje", "Perfil obtenido exitosamente");
             return ResponseEntity.ok(response);
         } else {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("mensaje", "Estudiante no encontrado");
+            errorResponse.put("mensaje", "Perfil no encontrado");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody EstudianteDTO dto) {
+    public ResponseEntity<?> save(@RequestBody PerfilDTO dto) {
         try {
-            Estudiante nuevo = estudianteService.save(dto);
+            Perfil nuevoPerfil = perfilService.save(dto);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("idEstudiante", nuevo.getIdEstudiante());
-            response.put("mensaje", "Estudiante creado exitosamente");
+            response.put("idPerfil", nuevoPerfil.getId().toString());
+            response.put("mensaje", "Perfil creado exitosamente");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("mensaje", "Error al crear estudiante: " + e.getMessage());
+            errorResponse.put("mensaje", "Error al crear perfil: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @PutMapping("/{idEstudiante}")
-    public ResponseEntity<?> update(@PathVariable("idEstudiante") ObjectId idEstudiante, @RequestBody EstudianteDTO dto) {
+    @PutMapping("/{idPerfil}")
+    public ResponseEntity<?> update(@PathVariable("idPerfil") ObjectId idPerfil, @RequestBody PerfilDTO dto) {
         try {
-            Estudiante actualizado = estudianteService.update(idEstudiante, dto);
+            Perfil perfil = perfilService.update(idPerfil, dto);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("idEstudiante", actualizado.getIdEstudiante());
-            response.put("mensaje", "Estudiante actualizado exitosamente");
+            response.put("idPerfil", perfil.getId().toString());
+            response.put("mensaje", "Perfil actualizado exitosamente");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("mensaje", "Error al actualizar estudiante: " + e.getMessage());
+            errorResponse.put("mensaje", "Error al actualizar perfil: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @DeleteMapping("/{idEstudiante}")
-    public ResponseEntity<?> delete(@PathVariable("idEstudiante") ObjectId idEstudiante) {
+    @DeleteMapping("/{idPerfil}")
+    public ResponseEntity<?> delete(@PathVariable("idPerfil") ObjectId idPerfil) {
         try {
-            estudianteService.delete(idEstudiante);
+            perfilService.delete(idPerfil);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("mensaje", "Estudiante eliminado exitosamente");
+            response.put("mensaje", "Perfil eliminado exitosamente");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("mensaje", "Error al eliminar estudiante: " + e.getMessage());
+            errorResponse.put("mensaje", "Error al eliminar perfil: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }

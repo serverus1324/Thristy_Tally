@@ -2,20 +2,47 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getData, deleteData, putData } from '../../api/api';
 import Navbar from '../../components/navbar/Navbar';
+import { Toaster, toast } from 'react-hot-toast';
+import Chart from '../../components/chart/Chart';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
 import "./dashboard.css";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const SimpleGastosTable = ({
   gastos,
   accionActual,
   onStartEliminar,
   onStartAumentar,
+  onStartEditar,
   onConfirmDelete,
   onCancelAction,
   onApplyIncrease,
-  onChangeIncreaseValue
+  onChangeIncreaseValue,
+  onApplyEdit,
+  onChangeEditValue,
+  searchTerm
 }) => {
-  if (!gastos || gastos.length === 0) {
-    return <p className="text-center text-muted mt-3">No hay necesidades registradas para este período.</p>;
+  const filteredGastos = gastos.filter(gasto => {
+    const nombre = (gasto?.nombre || gasto?.descripcion || '').toLowerCase();
+    const descripcion = (gasto?.descripcion || gasto?.nombre || '').toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return nombre.includes(search) || descripcion.includes(search);
+  });
+
+  if (!filteredGastos || filteredGastos.length === 0) {
+    return (
+      <div className="tt-empty-state">
+        <div className="tt-empty-icon">📭</div>
+        <h3>No hay necesidades encontradas</h3>
+        <p>
+          {searchTerm 
+            ? "Intente con otra búsqueda o registre una nueva necesidad."
+            : "¡Comience registrando su primera necesidad!"}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -32,7 +59,7 @@ const SimpleGastosTable = ({
         </thead>
 
         <tbody>
-          {gastos.map((gasto, idx) => {
+          {filteredGastos.map((gasto, idx) => {
             const nombre = gasto?.nombre || gasto?.descripcion || '—';
             const descripcion = gasto?.descripcion || gasto?.nombre || '—';
             const montoBase = gasto?.monto ?? gasto?.montoSolicitado;
@@ -42,54 +69,118 @@ const SimpleGastosTable = ({
               : (gasto?.estado || '—');
 
             const gid = gasto.id || gasto._id || idx;
+            const isEditing = accionActual && accionActual.id === gid && accionActual.mode === 'edit';
+            const isDeleting = accionActual && accionActual.id === gid && accionActual.mode === 'delete';
+            const isIncreasing = accionActual && accionActual.id === gid && accionActual.mode === 'increase';
 
             return (
               <tr key={gid}>
-                <td>{nombre}</td>
-                <td className="text-muted">{descripcion}</td>
-                <td className="fw-semibold">${monto}</td>
-                <td>{estado}</td>
-
-                <td className="text-center">
-                  {accionActual && accionActual.id === (gasto.id || gasto._id) ? (
-                    accionActual.mode === 'delete' ? (
+                {isEditing ? (
+                  <>
+                    <td>
+                      <input
+                        type="text"
+                        value={accionActual.editNombre || nombre}
+                        onChange={(e) => onChangeEditValue('editNombre', e.target.value)}
+                        className="form-control"
+                        placeholder="Nombre"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={accionActual.editDescripcion || descripcion}
+                        onChange={(e) => onChangeEditValue('editDescripcion', e.target.value)}
+                        className="form-control"
+                        placeholder="Descripción"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={accionActual.editMonto || monto}
+                        onChange={(e) => onChangeEditValue('editMonto', e.target.value)}
+                        className="form-control"
+                        min="0"
+                        step="0.01"
+                        placeholder="Monto"
+                      />
+                    </td>
+                    <td>{estado}</td>
+                    <td className="text-center">
                       <div className="d-flex gap-2 justify-content-center">
-                        <button className="btn btn-sm btn-danger" onClick={onConfirmDelete}>Confirmar</button>
-                        <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>Cancelar</button>
+                        <button className="btn btn-sm btn-success" onClick={onApplyEdit}>
+                          Guardar
+                        </button>
+                        <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>
+                          Cancelar
+                        </button>
                       </div>
-                    ) : (
-                      <div className="d-flex gap-2 align-items-center justify-content-center">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={accionActual.value ?? ''}
-                          onChange={(e) => onChangeIncreaseValue(e.target.value)}
-                          className="form-control form-control-sm"
-                          style={{ maxWidth: '120px' }}
-                          placeholder="+ monto"
-                        />
-                        <button className="btn btn-sm btn-warning" onClick={onApplyIncrease}>Aplicar</button>
-                        <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>Cancelar</button>
-                      </div>
-                    )
-                  ) : (
-                    <>
-                      <button
-                        className="btn btn-sm btn-danger me-2"
-                        onClick={() => onStartEliminar(gasto)}
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        className="btn btn-sm btn-warning"
-                        onClick={() => onStartAumentar(gasto)}
-                      >
-                        Aumentar valor
-                      </button>
-                    </>
-                  )}
-                </td>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td>{nombre}</td>
+                    <td className="text-muted">{descripcion}</td>
+                    <td className="fw-semibold">${monto}</td>
+                    <td>{estado}</td>
+                    <td className="text-center">
+                      {isDeleting ? (
+                        <div className="d-flex gap-2 justify-content-center">
+                          <button className="btn btn-sm btn-danger" onClick={onConfirmDelete}>
+                            Confirmar
+                          </button>
+                          <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : isIncreasing ? (
+                        <div className="d-flex gap-2 align-items-center justify-content-center">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={accionActual.value ?? ''}
+                            onChange={(e) => onChangeIncreaseValue(e.target.value)}
+                            className="form-control form-control-sm"
+                            style={{ maxWidth: '120px' }}
+                            placeholder="+ monto"
+                          />
+                          <button className="btn btn-sm btn-warning" onClick={onApplyIncrease}>
+                            Aplicar
+                          </button>
+                          <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="d-flex gap-2 justify-content-center">
+                          <button
+                            className="btn btn-sm btn-info"
+                            onClick={() => onStartEditar(gasto)}
+                            title="Editar"
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            className="btn btn-sm btn-warning"
+                            onClick={() => onStartAumentar(gasto)}
+                            title="Aumentar valor"
+                          >
+                            ➕ Aumentar
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => onStartEliminar(gasto)}
+                            title="Eliminar"
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </>
+                )}
               </tr>
             );
           })}
@@ -101,7 +192,13 @@ const SimpleGastosTable = ({
 
 const ChartPlaceholder = ({ gastos }) => {
   if (!gastos || gastos.length === 0) {
-    return <p className="text-center text-muted">No hay datos suficientes para mostrar en el gráfico.</p>;
+    return (
+      <div className="tt-empty-state">
+        <div className="tt-empty-icon">📊</div>
+        <h3>No hay datos suficientes</h3>
+        <p>Registre algunas necesidades para ver el gráfico.</p>
+      </div>
+    );
   }
 
   const totalGastado = gastos.reduce(
@@ -109,27 +206,68 @@ const ChartPlaceholder = ({ gastos }) => {
     0
   );
 
+  const aggByTipo = gastos.reduce((acc, g) => {
+    const tipo = String(g.tipo || g.descripcion || 'OTROS').toUpperCase();
+    const monto = Number(g.monto || g.montoSolicitado || 0);
+    acc[tipo] = (acc[tipo] || 0) + (isNaN(monto) ? 0 : monto);
+    return acc;
+  }, {});
+
+  const labels = Object.keys(aggByTipo);
+  const values = labels.map(l => aggByTipo[l]);
+  
+  const colors = [
+    'rgba(56, 189, 248, 0.8)',
+    'rgba(16, 185, 129, 0.8)',
+    'rgba(96, 165, 250, 0.8)',
+    'rgba(34, 197, 94, 0.8)',
+    'rgba(125, 211, 252, 0.8)',
+    'rgba(167, 243, 208, 0.8)'
+  ];
+
+  const borderColors = colors.map(c => c.replace('0.8', '1'));
+
+  const pieData = {
+    labels,
+    datasets: [
+      {
+        label: 'Monto por categoría',
+        data: values,
+        backgroundColor: colors.slice(0, labels.length),
+        borderColor: borderColors.slice(0, labels.length),
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const pieOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          color: '#e2e8f0',
+          font: { weight: 'bold' }
+        }
+      },
+      title: {
+        display: true,
+        text: 'Distribución de Gastos por Categoría',
+        color: '#f0f9ff',
+        font: { weight: 'bold', size: 16 }
+      },
+    },
+  };
+
   return (
     <div className="tt-chart-card">
       <div className="tt-chart-header">
         <h5>Visualización de Datos</h5>
-        <p className="text-muted mb-0">Total solicitado en necesidades del período.</p>
+        <p className="text-muted mb-0">Total solicitado: ${totalGastado.toFixed(2)}</p>
       </div>
-
-      <div className="tt-chart-total">
-        ${totalGastado.toFixed(2)}
+      <div style={{ height: '400px' }}>
+        <Pie data={pieData} options={pieOptions} />
       </div>
-
-      <p className="text-center fst-italic small text-muted mb-3">
-        (Aquí se integrará el componente real de gráfico)
-      </p>
-
-      <details>
-        <summary className="tt-link">Ver datos crudos</summary>
-        <pre className="tt-raw">
-{JSON.stringify(gastos, null, 2)}
-        </pre>
-      </details>
     </div>
   );
 };
@@ -145,14 +283,15 @@ const ViewDashboard = () => {
   const [periodosConPresupuesto, setPeriodosConPresupuesto] = useState([]);
   const [selectedPeriodo, setSelectedPeriodo] = useState('');
   const [resumenPresupuesto, setResumenPresupuesto] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [viewStatus, setViewStatus] = useState({ loading: true, error: null });
   const [accionActual, setAccionActual] = useState(null);
 
-  /* --- acciones Navbar --- */
+  /* ===== acciones Navbar ===== */
   const handleGoHome = () => {
     if (!idUsuario) return;
-    navigate("/home", { state: { idEstudiante: idUsuario } });
+    navigate("/home", { state: { idPerfil: idUsuario } });
   };
 
   const handleLogout = () => {
@@ -164,19 +303,19 @@ const ViewDashboard = () => {
 
   const handleEditProfile = () => {
     if (!idUsuario) return;
-    navigate("/editar-datos", { state: { idEstudiante: idUsuario } });
-  
+    navigate("/editar-datos", { state: { idPerfil: idUsuario } });
+
   };
 
   /* 1) Resolver idUsuario */
   useEffect(() => {
-    const idFromLocation = location.state?.idEstudiante ?? location.state?.userData?.data?._id;
+    const idFromLocation = location.state?.idPerfil ?? location.state?.userData?.data?._id;
     let idFromStorage = null;
-    try { idFromStorage = localStorage.getItem('idEstudiante'); } catch {}
+    try { idFromStorage = localStorage.getItem('idPerfil'); } catch {}
     const resolvedId = idFromLocation ?? idFromStorage;
 
     if (resolvedId) setIdUsuario(resolvedId);
-    else setViewStatus({ loading: false, error: null });
+    else setViewStatus(prev => ({ ...prev, loading: false }));
   }, [location.state, navigate]);
 
   /* 2) Cargar usuario + periodos */
@@ -214,7 +353,7 @@ const ViewDashboard = () => {
           const periodoId = periodo._id ?? periodo.id ?? periodo.nombre ?? '';
           try {
             await getData(
-              `necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${periodoId}`
+              `necesidades/resumen-presupuesto?idPerfil=${idUsuario}&idPeriodo=${periodoId}`
             );
             periodosValidos.push(periodo);
           } catch (err) {
@@ -267,7 +406,7 @@ const ViewDashboard = () => {
     const fetchPeriodData = async () => {
       try {
         const necesidadesDataResponse = await getData(
-          `necesidades/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-estudiante-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
         );
 
         if (!isActive) return;
@@ -281,7 +420,7 @@ const ViewDashboard = () => {
 
         try {
           const resumenDataResponse = await getData(
-            `necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
+            `necesidades/resumen-presupuesto?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
           );
           setResumenPresupuesto(
             resumenDataResponse?.data
@@ -316,7 +455,7 @@ const ViewDashboard = () => {
     if (selectedPeriodo && idUsuario) {
       try {
         const necesidadesData = await getData(
-          `necesidades/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-estudiante-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
         );
         setNecesidades(
           Array.isArray(necesidadesData?.data)
@@ -336,7 +475,7 @@ const ViewDashboard = () => {
     if (selectedPeriodo && idUsuario) {
       try {
         const resumenData = await getData(
-          `necesidades/resumen-presupuesto?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
+          `necesidades/resumen-presupuesto?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
         );
         setResumenPresupuesto(
           resumenData?.data ? resumenData : { data: resumenData }
@@ -366,8 +505,9 @@ const ViewDashboard = () => {
       await deleteData(`necesidades/${accionActual.id}`);
       await getNecesidadesCurrentPeriodo();
       await getResumenPresupuestoCurrentPeriodo();
+      toast.success('Necesidad eliminada con éxito!');
     } catch (e) {
-      alert('Error al eliminar necesidad: ' + (e?.message || ''));
+      toast.error('Error al eliminar necesidad: ' + (e?.message || ''));
     } finally {
       setAccionActual(null);
     }
@@ -387,23 +527,23 @@ const ViewDashboard = () => {
     if (!accionActual?.id) return;
     const incremento = Number(accionActual.value);
     if (Number.isNaN(incremento) || incremento <= 0) {
-      alert('Valor inválido. Ingrese un número mayor a 0.');
+      toast.error('Valor inválido. Ingrese un número mayor a 0.');
       return;
     }
 
     const necesidad = accionActual.item;
     const id = necesidad.id || necesidad._id;
-    const montoActual = Number(necesidad.monto ?? necesidad.montoSolicitado ?? 0);
+    const montoActual = Number((necesidad.monto ?? necesidad.montoSolicitado) || 0);
     const nuevoMonto = montoActual + incremento;
 
     try {
-      let idEst = necesidad.idEstudiante || idUsuario || null;
+      let idEst = necesidad.idPerfil || idUsuario || null;
       let idPer = necesidad.idPeriodo || selectedPeriodo || null;
       let idPres = necesidad.idPresupuesto || null;
 
       if (!idPres && idEst && idPer) {
         const presupuestoResp = await getData(
-          `presupuestos/por-estudiante-periodo?idEstudiante=${idEst}&idPeriodo=${idPer}`
+          `presupuestos/por-estudiante-periodo?idPerfil=${idEst}&idPeriodo=${idPer}`
         );
         const p = presupuestoResp?.data || presupuestoResp;
         idPres = p?.id || p?._id || null;
@@ -416,7 +556,7 @@ const ViewDashboard = () => {
         esPredeterminada: typeof necesidad.esPredeterminada === 'number'
           ? necesidad.esPredeterminada
           : (necesidad.esPredeterminada ? 1 : 0),
-        idEstudiante: idEst,
+        idPerfil: idEst,
         idPeriodo: idPer,
         idPresupuesto: idPres
       };
@@ -424,8 +564,76 @@ const ViewDashboard = () => {
       await putData('necesidades', dto);
       await getNecesidadesCurrentPeriodo();
       await getResumenPresupuestoCurrentPeriodo();
+      toast.success('Monto actualizado con éxito!');
     } catch (e) {
-      alert('Error al actualizar el monto: ' + (e?.message || ''));
+      toast.error('Error al actualizar el monto: ' + (e?.message || ''));
+      console.error('PUT necesidades error', e);
+    } finally {
+      setAccionActual(null);
+    }
+  };
+
+  const startEditar = (necesidad) => {
+    const id = necesidad.id || necesidad._id;
+    if (!id) return;
+    setAccionActual({
+      id,
+      mode: 'edit',
+      item: necesidad,
+      editNombre: necesidad?.nombre || necesidad?.descripcion || '',
+      editDescripcion: necesidad?.descripcion || necesidad?.nombre || '',
+      editMonto: necesidad?.monto ?? necesidad?.montoSolicitado ?? ''
+    });
+  };
+
+  const onChangeEditValue = (field, value) => {
+    setAccionActual(prev => ({ ...prev, [field]: value }));
+  };
+
+  const applyEdit = async () => {
+    if (!accionActual?.id) return;
+
+    const necesidad = accionActual.item;
+    const id = necesidad.id || necesidad._id;
+    
+    const nuevoMonto = Number(accionActual.editMonto);
+    if (Number.isNaN(nuevoMonto) || nuevoMonto < 0) {
+      toast.error('Monto inválido. Ingrese un número mayor o igual a 0.');
+      return;
+    }
+
+    try {
+      let idEst = necesidad.idPerfil || idUsuario || null;
+      let idPer = necesidad.idPeriodo || selectedPeriodo || null;
+      let idPres = necesidad.idPresupuesto || null;
+
+      if (!idPres && idEst && idPer) {
+        const presupuestoResp = await getData(
+          `presupuestos/por-estudiante-periodo?idPerfil=${idEst}&idPeriodo=${idPer}`
+        );
+        const p = presupuestoResp?.data || presupuestoResp;
+        idPres = p?.id || p?._id || null;
+      }
+
+      const dto = {
+        id,
+        nombre: accionActual.editNombre,
+        descripcion: accionActual.editDescripcion,
+        monto: nuevoMonto,
+        esPredeterminada: typeof necesidad.esPredeterminada === 'number'
+          ? necesidad.esPredeterminada
+          : (necesidad.esPredeterminada ? 1 : 0),
+        idPerfil: idEst,
+        idPeriodo: idPer,
+        idPresupuesto: idPres
+      };
+
+      await putData('necesidades', dto);
+      await getNecesidadesCurrentPeriodo();
+      await getResumenPresupuestoCurrentPeriodo();
+      toast.success('Necesidad actualizada con éxito!');
+    } catch (e) {
+      toast.error('Error al actualizar la necesidad: ' + (e?.message || ''));
       console.error('PUT necesidades error', e);
     } finally {
       setAccionActual(null);
@@ -437,17 +645,17 @@ const ViewDashboard = () => {
   const aumentarPresupuesto = async () => {
     try {
       if (!idUsuario || !selectedPeriodo) {
-        alert('Seleccione un período para editar el presupuesto.');
+        toast.error('Seleccione un período para editar el presupuesto.');
         return;
       }
       const presupuestoResp = await getData(
-        `presupuestos/por-estudiante-periodo?idEstudiante=${idUsuario}&idPeriodo=${selectedPeriodo}`
+        `presupuestos/por-estudiante-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
       );
       const p = presupuestoResp?.data || presupuestoResp;
       const presupuestoId = p?.id || p?._id;
 
       if (!presupuestoId) {
-        alert('No se encontró el presupuesto del período seleccionado.');
+        toast.error('No se encontró el presupuesto del período seleccionado.');
         return;
       }
       navigate(`/presupuesto/${presupuestoId}/editar`);
@@ -456,7 +664,7 @@ const ViewDashboard = () => {
         ...prev,
         error: 'Error al abrir edición de presupuesto: ' + e.message
       }));
-      alert('No fue posible abrir la edición de presupuesto.');
+      toast.error('No fue posible abrir la edición de presupuesto.');
     }
   };
 
@@ -478,6 +686,14 @@ const ViewDashboard = () => {
             <span>Cargando datos, por favor espere...</span>
           </div>
         </main>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: { background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(56,189,248,0.3)' },
+            success: { style: { background: '#064e3b', color: '#bbf7d0', border: '1px solid rgba(34,197,94,0.5)' } },
+            error: { style: { background: '#7f1d1d', color: '#fecaca', border: '1px solid rgba(239,68,68,0.5)' } }
+          }}
+        />
       </>
     );
   }
@@ -492,26 +708,36 @@ const ViewDashboard = () => {
           onEditProfile={handleEditProfile}
         />
         <main className="tt-dashboard-hero">
-          <div className="container">
-            <div className="alert alert-danger text-center">
-              <h4 className="alert-heading">¡Ocurrió un Error!</h4>
-              <p>{viewStatus.error}</p>
-              {idUsuario === null && (
-                <p className="mb-0">
-                  Si el problema persiste, intente{' '}
-                  <a href="/login" className="alert-link">iniciar sesión</a>{' '}
-                  nuevamente.
-                </p>
-              )}
-              <button
-                className="btn btn-danger mt-3"
-                onClick={() => window.location.reload()}
-              >
-                Intentar de Nuevo
-              </button>
+          <div className="tt-dashboard-stage">
+            <div className="tt-central-card">
+              <div className="alert alert-danger text-center">
+                <h4 className="alert-heading">¡Ocurrió un Error!</h4>
+                <p>{viewStatus.error}</p>
+                {idUsuario === null && (
+                  <p className="mb-0">
+                    Si el problema persiste, intenta{' '}
+                    <a href="/login" className="alert-link">iniciar sesión</a>{' '}
+                    nuevamente.
+                  </p>
+                )}
+                <button
+                  className="btn btn-danger mt-3"
+                  onClick={() => window.location.reload()}
+                >
+                  Intentar de Nuevo
+                </button>
+              </div>
             </div>
           </div>
         </main>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: { background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(56,189,248,0.3)' },
+            success: { style: { background: '#064e3b', color: '#bbf7d0', border: '1px solid rgba(34,197,94,0.5)' } },
+            error: { style: { background: '#7f1d1d', color: '#fecaca', border: '1px solid rgba(239,68,68,0.5)' } }
+          }}
+        />
       </>
     );
   }
@@ -528,241 +754,175 @@ const ViewDashboard = () => {
 
       <main className="tt-dashboard-hero">
         <div className="tt-dashboard-stage">
-
-          {/* ===== Header superior ===== */}
-          <section className="tt-dashboard-header">
-            <div className="tt-header-left">
-              <span className="tt-chip">PANEL PRINCIPAL</span>
-
-              <h1 className="tt-title">
-                Panel de Control Financiero
-              </h1>
-
-              <p className="tt-subtitle">
-                Bienvenido/a, {userData?.data?.nombre} {userData?.data?.apellido || ''}.
-                Selecciona un período y administra tus necesidades de forma clara.
-              </p>
+          <div className="tt-central-card">
+            {/* ===== Header ===== */}
+            <div className="tt-card-header">
+              <div className="tt-chip">PANEL DE CONTROL</div>
+              <h2 className="tt-card-title">Gestión de Presupuestos</h2>
             </div>
 
-            <div className="tt-header-right">
-              <div className="tt-quick-card">
-                <h3>Atajos rápidos</h3>
-                <ul>
-                  <li>Visualiza tus necesidades por período.</li>
-                  <li>Ajusta tu presupuesto cuando lo necesites.</li>
-                  <li>Controla cuánto has consumido.</li>
-                </ul>
-
-                <button
-                  className="tt-btn-outline"
-                  onClick={handleGoHome}
+            {/* ===== Selector de Período ===== */}
+            <div className="tt-period-section">
+              <label className="tt-label">Seleccionar Período Académico</label>
+              {periodosConPresupuesto.length > 0 ? (
+                <select
+                  className="tt-select"
+                  value={selectedPeriodo}
+                  onChange={handlePeriodoChange}
+                  aria-label="Selector de período"
                 >
-                  Ir al Home
-                </button>
-              </div>
-            </div>
-          </section>
-
-          {/* ===== Selector de período ===== */}
-          <section className="tt-card tt-card-light tt-period-card">
-            <h2 className="tt-card-title">Seleccionar Período Académico</h2>
-
-            {periodosConPresupuesto.length > 0 ? (
-              <select
-                className="form-select tt-select"
-                value={selectedPeriodo}
-                onChange={handlePeriodoChange}
-                aria-label="Selector de período"
-              >
-                <option value="" disabled>-- Seleccione un período --</option>
-                {periodosConPresupuesto.map((periodo) => {
-                  const val = periodo._id ?? periodo.id ?? periodo.nombre;
-                  const label = periodo.nombre ?? periodo._id ?? periodo.id;
-                  return (
-                    <option key={String(val)} value={String(val)}>
-                      {String(label)}
-                    </option>
-                  );
-                })}
-              </select>
-            ) : (
-              <div className="text-center py-3">
-                <p className="text-muted mb-3">No hay períodos con presupuesto disponibles.</p>
-                <button
-                  className="btn btn-success"
-                  onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario } })}
-                >
-                  Crear Primer Presupuesto
-                </button>
-              </div>
-            )}
-          </section>
-
-          {/* ===== Resumen presupuesto ===== */}
-          {selectedPeriodo && resumenPresupuesto && (
-            <section className="tt-card tt-resumen-card">
-              <div className="tt-resumen-head">
-                <h2 className="tt-card-title">
-                  Resumen del Presupuesto ({resumenPresupuesto?.data?.descripcionPresupuesto || 'General'})
-                </h2>
-
-                <button onClick={aumentarPresupuesto} className="tt-btn-soft">
-                  Ajustar presupuesto
-                </button>
-              </div>
-
-              <div className="tt-resumen-grid">
-                <div className="tt-metric">
-                  <p>Total Asignado</p>
-                  <h3 className="tt-metric-assign">
-                    ${(resumenPresupuesto?.data?.totalAsignado || 0).toFixed(2)}
-                  </h3>
-                </div>
-
-                <div className="tt-metric">
-                  <p>Total Gastado</p>
-                  <h3 className="tt-metric-spent">
-                    ${(resumenPresupuesto?.data?.totalGastado || 0).toFixed(2)}
-                  </h3>
-                </div>
-
-                <div className="tt-metric">
-                  <p>Disponible</p>
-                  <h3 className={`tt-metric-available ${resumenPresupuesto?.data?.disponible < 0 ? 'neg' : ''}`}>
-                    ${(resumenPresupuesto?.data?.disponible || 0).toFixed(2)}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="tt-progress-wrap">
-                <div className="tt-progress-row">
-                  <span>Porcentaje consumido</span>
-                  <span className={`tt-badge ${
-                    porcentajeConsumido > 100
-                      ? 'danger'
-                      : porcentajeConsumido > 80
-                        ? 'warn'
-                        : 'ok'
-                  }`}>
-                    {porcentajeConsumido.toFixed(2)}%
-                  </span>
-                </div>
-
-                <div className="progress tt-progress">
-                  <div
-                    className={`progress-bar progress-bar-striped progress-bar-animated ${
-                      porcentajeConsumido > 100
-                        ? "bg-danger"
-                        : porcentajeConsumido > 80
-                          ? "bg-warning"
-                          : "bg-success"
-                    }`}
-                    role="progressbar"
-                    style={{ width: `${Math.min(porcentajeConsumido, 100)}%` }}
-                    aria-valuenow={porcentajeConsumido}
-                    aria-valuemin="0"
-                    aria-valuemax="100"
+                  <option value="" disabled>-- Selecciona un período --</option>
+                  {periodosConPresupuesto.map((periodo) => {
+                    const val = periodo._id ?? periodo.id ?? periodo.nombre;
+                    const label = periodo.nombre ?? periodo._id ?? periodo.id;
+                    return (
+                      <option key={String(val)} value={String(val)}>
+                        {String(label)}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <div className="tt-empty-period">
+                  <p>No hay períodos con presupuesto disponibles.</p>
+                  <button
+                    className="tt-btn-primary-gradient"
+                    onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario } })}
                   >
-                    {porcentajeConsumido.toFixed(0)}%
+                    Crear Primer Presupuesto
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* ===== Resumen ===== */}
+            {selectedPeriodo && resumenPresupuesto && (
+              <div className="tt-resumen-section">
+                <div className="tt-resumen-header">
+                  <h3>Resumen del Presupuesto: {resumenPresupuesto?.data?.descripcionPresupuesto || 'General'}</h3>
+                  <button onClick={aumentarPresupuesto} className="tt-btn-soft">
+                    Ajustar Presupuesto
+                  </button>
+                </div>
+                <div className="tt-resumen-grid">
+                  <div className="tt-resumen-item">
+                    <div className="tt-resumen-icon blue"></div>
+                    <div className="tt-resumen-info">
+                      <span>Total Asignado</span>
+                      <strong>${(resumenPresupuesto?.data?.totalAsignado || 0).toFixed(2)}</strong>
+                    </div>
+                  </div>
+                  <div className="tt-resumen-item">
+                    <div className="tt-resumen-icon red"></div>
+                    <div className="tt-resumen-info">
+                      <span>Total Gastado</span>
+                      <strong>${(resumenPresupuesto?.data?.totalGastado || 0).toFixed(2)}</strong>
+                    </div>
+                  </div>
+                  <div className="tt-resumen-item">
+                    <div className="tt-resumen-icon green"></div>
+                    <div className="tt-resumen-info">
+                      <span>Disponible</span>
+                      <strong className={`${resumenPresupuesto?.data?.disponible < 0 ? 'neg' : ''}`}>
+                        ${(resumenPresupuesto?.data?.disponible || 0).toFixed(2)}
+                      </strong>
+                    </div>
                   </div>
                 </div>
 
-                {porcentajeConsumido > 100 && (
-                  <p className="tt-alert">
-                    ¡Atención! Has excedido el presupuesto asignado.
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
-
-          {selectedPeriodo && !resumenPresupuesto && (
-            <section className="tt-card tt-card-light">
-              <p className="mb-2 text-muted">No hay presupuesto asociado para este período.</p>
-              <div className="d-flex gap-2">
-                <button onClick={aumentarPresupuesto} className="btn btn-outline-primary">
-                  Buscar/Editar Presupuesto
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario, selectedPeriodo } })}
-                >
-                  Crear Presupuesto
-                </button>
-              </div>
-            </section>
-          )}
-
-          {!selectedPeriodo && idUsuario && (
-            <p className="text-center text-info mt-3">
-              Por favor, seleccione un período para ver el resumen y las necesidades.
-            </p>
-          )}
-
-          {/* ===== Necesidades + gráfico ===== */}
-          {selectedPeriodo && (
-            <>
-              <section className="tt-card tt-card-glass mt-4">
-                <div className="tt-section-head">
-                  <h2>Mis Necesidades Registradas</h2>
-                  <p className="text-muted mb-0">Administre sus necesidades del período seleccionado.</p>
+                <div className="tt-progress-section">
+                  <div className="tt-progress-header">
+                    <span>Porcentaje Consumido</span>
+                    <span className={`tt-progress-badge ${porcentajeConsumido > 100 ? 'danger' : porcentajeConsumido > 80 ? 'warn' : 'ok'}`}>
+                      {porcentajeConsumido.toFixed(2)}%
+                    </span>
+                  </div>
+                  <div className="tt-progress">
+                    <div
+                      className={`tt-progress-fill ${porcentajeConsumido > 100 ? 'danger' : porcentajeConsumido > 80 ? 'warn' : 'ok'}`}
+                      style={{ width: `${Math.min(porcentajeConsumido, 100)}%` }}
+                    ></div>
+                  </div>
+                  {porcentajeConsumido > 100 && (
+                    <p className="tt-warning-text">
+                      ¡Atención! Has excedido el presupuesto asignado.
+                    </p>
+                  )}
                 </div>
-
-                <SimpleGastosTable
-                  gastos={necesidades}
-                  accionActual={accionActual}
-                  onStartEliminar={startEliminar}
-                  onStartAumentar={startAumentar}
-                  onConfirmDelete={confirmarEliminar}
-                  onCancelAction={cancelAction}
-                  onApplyIncrease={applyIncrease}
-                  onChangeIncreaseValue={changeIncreaseValue}
-                />
-              </section>
-
-              <section className="tt-card tt-card-glass mt-4">
-                <div className="tt-section-head">
-                  <h2>Distribución de Necesidades</h2>
-                  <p className="text-muted mb-0">Vista general del gasto solicitado.</p>
-                </div>
-                <ChartPlaceholder gastos={necesidades} />
-              </section>
-            </>
-          )}
-
-          {/* ===== Acciones inferiores ===== */}
-          <section className="tt-footer-actions">
-            <button
-              className="tt-btn-primary"
-              onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario, selectedPeriodo } })}
-              disabled={!idUsuario || viewStatus.loading}
-            >
-              Registrar Nueva Necesidad
-            </button>
-
-            <a
-              className="tt-btn-ghost"
-              href="https://app.powerbi.com/links/PJl9Q2bTHd?ctid=9d12bf3f-e4f6-47ab-912f-1a2f0fc48aa4&pbi_source=linkShare"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Análisis de Datos PowerBI
-            </a>
-
-            {!idUsuario && (
-              <p className="form-text text-muted mt-2">
-                Debe iniciar sesión para registrar necesidades.
-              </p>
+              </div>
             )}
 
-            {idUsuario && !selectedPeriodo && (
-              <p className="form-text text-muted mt-2">
-                No has seleccionado un período. Puedes crear uno al continuar.
-              </p>
-            )}
-          </section>
+            {/* ===== Necesidades y Gráfico ===== */}
+            {selectedPeriodo && (
+              <div className="tt-content-sections">
+                <div className="tt-section">
+                  <div className="tt-section-header">
+                    <h3>Mis Necesidades Registradas</h3>
+                    <div className="tt-search-wrap">
+                      <input
+                        type="text"
+                        placeholder="Buscar necesidad..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="tt-input-search"
+                      />
+                    </div>
+                  </div>
+                  <SimpleGastosTable
+                    gastos={necesidades}
+                    accionActual={accionActual}
+                    onStartEliminar={startEliminar}
+                    onStartAumentar={startAumentar}
+                    onStartEditar={startEditar}
+                    onConfirmDelete={confirmarEliminar}
+                    onCancelAction={cancelAction}
+                    onApplyIncrease={applyIncrease}
+                    onChangeIncreaseValue={changeIncreaseValue}
+                    onApplyEdit={applyEdit}
+                    onChangeEditValue={onChangeEditValue}
+                    searchTerm={searchTerm}
+                  />
+                </div>
 
+                <div className="tt-section">
+                  <div className="tt-section-header">
+                    <h3>Distribución de Gastos</h3>
+                  </div>
+                  <ChartPlaceholder gastos={necesidades} />
+                </div>
+              </div>
+            )}
+
+            {/* ===== Footer Actions ===== */}
+            <div className="tt-footer-actions">
+              <button
+                className="tt-btn-primary-gradient"
+                onClick={() => navigate('/necesidad-presupuesto', { state: { idUsuario, selectedPeriodo } })}
+                disabled={!idUsuario || viewStatus.loading}
+              >
+                📝 Registrar Nueva Necesidad
+              </button>
+
+              <a
+                className="tt-btn-secondary"
+                href="https://app.powerbi.com/links/PJl9Q2bTHd?ctid=9d12bf3f-e4f6-47ab-912f-1a2f0fc48aa4&pbi_source=linkShare"
+                target="_blank"
+                rel="noreferrer"
+              >
+                📊 Análisis de Datos PowerBI
+              </a>
+            </div>
+          </div>
         </div>
+
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: { background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(56,189,248,0.3)' },
+            success: { style: { background: '#064e3b', color: '#bbf7d0', border: '1px solid rgba(34,197,94,0.5)' } },
+            error: { style: { background: '#7f1d1d', color: '#fecaca', border: '1px solid rgba(239,68,68,0.5)' } }
+          }}
+        />
       </main>
     </>
   );

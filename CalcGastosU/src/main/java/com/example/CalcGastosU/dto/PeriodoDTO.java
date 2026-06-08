@@ -19,5 +19,5 @@ public class PeriodoDTO implements Serializable {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     @JsonDeserialize(using = ObjectIdDeserializer.class)
-    private ObjectId idEstudiante;
+    private ObjectId idPerfil;
 }

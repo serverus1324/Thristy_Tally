@@ -6,13 +6,12 @@
   width: 100%;
   z-index: 40;
 
-  /* Fondo ligeramente más oscuro que el resto del layout */
-  background: radial-gradient(circle at 0% 0%, rgba(15, 23, 42, 0.95), #020617);
-  backdrop-filter: blur(10px);
+  background: rgba(6, 12, 24, 0.88);
+  backdrop-filter: blur(12px);
 
-  border-bottom: 1px solid rgba(15, 23, 42, 0.85);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-  padding: 10px 32px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+  padding: 10px 28px;
 }
 
 /* Contenedor interno */
@@ -28,69 +27,72 @@
 
 /* Marca "Thrifty Tally"*/
 .navbar-brand {
-  margin-right: auto;       
-  font-size: 20px;
+  margin-right: auto;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: 0.04em;
-  color: #e5e7eb;
+  color: #f8fafc;
   text-align: left;
 }
 
 .navbar-brand span {
-  color: #3b82f6;
+  color: #38bdf8;
 }
 
 /* Contenedor de botones a la DERECHA */
 .navbar-right {
-  margin-left: auto;         
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* Botones base */
 .nav-btn {
   border-radius: 999px;
-  padding: 6px 18px;
+  padding: 8px 18px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.18s ease-out;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 /* Botón "Editar datos" */
 .nav-btn-outline {
   background: transparent;
-  color: #e5e7eb;
-  border-color: rgba(59, 130, 246, 0.6);
+  color: #f8fafc;
+  border-color: rgba(56, 189, 248, 0.6);
 }
 .nav-btn-outline:hover {
-  background: rgba(37, 99, 235, 0.2);
-  border-color: rgba(59, 130, 246, 0.9);
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(125, 211, 252, 0.9);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
 }
 
 /* Botón "Home" */
 .nav-btn-secondary {
-  background: rgba(231, 217, 25, 0.95);
-  color: #f9fafb;
-  box-shadow: 0 10px 25px rgba(147, 163, 22, 0.5);
+  background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(56, 189, 248, 0.5);
 }
 .nav-btn-secondary:hover {
-  background: rgb(123, 128, 21);
-  transform: translateY(-1px);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(56, 189, 248, 0.6);
 }
 
 /* Botón "Cerrar sesión" */
 .nav-btn-danger {
-  background: #ef4444;
-  color: #fef2f2;
-  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.6);
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(239, 68, 68, 0.5);
 }
 .nav-btn-danger:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(239, 68, 68, 0.6);
 }
 
 /* Responsive */
@@ -108,11 +110,11 @@
   }
 
   .navbar-right {
-    gap: 8px;
+    gap: 10px;
   }
 
   .nav-btn {
-    padding: 5px 14px;
+    padding: 6px 14px;
     font-size: 13px;
   }
 }
