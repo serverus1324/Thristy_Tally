@@ -44,8 +44,7 @@ public class EstudianteService {
         Usuario usuario = new Usuario();
         usuario.setUsername(dto.getUsername());
         usuario.setPassword(dto.getPassword());
-        usuario.setIdEstudiante(estudiante.getId());
-
+        usuario.setIdPerfil(estudiante.getId()); //  Cambia "Estudiante" por "Perfil"
         usuarioRepository.save(usuario);
 
         return estudiante;
@@ -63,7 +62,7 @@ public class EstudianteService {
         }
         estudianteRepository.save(estudiante);
 
-        Usuario usuario = usuarioRepository.findByIdEstudiante(estudiante.getId())
+        Usuario usuario = usuarioRepository.findByIdPerfil(estudiante.getId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setUsername(dto.getUsername());
