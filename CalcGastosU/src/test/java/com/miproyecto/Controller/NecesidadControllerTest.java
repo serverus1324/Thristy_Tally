@@ -1,5 +1,6 @@
 package com.miproyecto.Controller;
 
+import com.example.CalcGastosU.CalcGastosUApplication;  // ← NUEVO IMPORT
 import com.example.CalcGastosU.dto.NecesidadDTO;
 import com.example.CalcGastosU.dto.ResumenPresupuestoDTO;
 import com.example.CalcGastosU.entity.Necesidad;
@@ -26,8 +27,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(classes = CalcGastosUApplication.class)  // ← CAMBIADO
 @AutoConfigureMockMvc
+@DisplayName("Pruebas del Controlador de Necesidades")  // ← AGREGADO
 class NecesidadControllerTest {
 
     @Autowired
