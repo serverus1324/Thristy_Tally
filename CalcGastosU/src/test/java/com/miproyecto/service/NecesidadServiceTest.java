@@ -134,8 +134,8 @@ class NecesidadServiceTest {
             // Assert
             assertNotNull(resultado);
             assertEquals(2, resultado.size());
-            assertEquals("comida", resultado.get(0).getDescripcion());
-            assertEquals("vehiculo", resultado.get(1).getDescripcion());
+            assertEquals("Alimentación", resultado.get(0).getDescripcion());
+            assertEquals("Transporte", resultado.get(1).getDescripcion());
             verify(necesidadRepository, times(1)).findAll();
         }
 
