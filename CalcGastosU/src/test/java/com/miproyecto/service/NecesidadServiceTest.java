@@ -656,5 +656,6 @@ void testGuardarExcedePresupuestoForzado() {
             });
             assertEquals("Presupuesto no encontrado", exception.getMessage());
         }
-    }
+    } 
+}
 }
