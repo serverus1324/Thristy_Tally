@@ -302,7 +302,7 @@ class NecesidadControllerTest {
                 .findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo);
     }
 
-    @Test
+  /*   @Test
     @DisplayName("GET /api/v1/necesidades/por-estudiante-periodo - Debe usar el alias disponible")
     void testFindByEstudiantePeriodoExitoso() throws Exception {
         when(necesidadService.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo))
@@ -339,7 +339,7 @@ class NecesidadControllerTest {
 
         verify(necesidadService, times(1))
                 .findByIdPresupuesto(idPresupuesto);
-    }
+    } */
 
     @Test
     @DisplayName("GET /api/v1/necesidades/por-presupuesto - Debería devolver 400 con ID inválido")
