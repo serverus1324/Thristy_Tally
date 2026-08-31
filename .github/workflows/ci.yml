@@ -14,20 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Configurar JDK 21
+      - name: Configurar JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'  # ✅ CAMBIADO A 17 (coincide con tu pom.xml)
           distribution: 'temurin'
       
-      - name: Build con Maven
-        run: mvn -B clean compile
-      
-      - name: Ejecutar pruebas unitarias
-        run: mvn test
-      
-      - name: Reporte de cobertura JaCoCo
-        run: mvn jacoco:report
+      - name: Build y pruebas con cobertura
+        run: mvn clean test jacoco:report  # ✅ UNIFICADO
       
       - name: Publicar reporte como artefacto
         uses: actions/upload-artifact@v4
