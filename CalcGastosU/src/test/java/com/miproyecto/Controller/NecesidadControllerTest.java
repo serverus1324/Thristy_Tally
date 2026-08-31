@@ -1,6 +1,6 @@
 package com.miproyecto.Controller;
 
-import com.example.CalcGastosU.CalcGastosUApplication;  // ← NUEVO IMPORT
+import com.example.CalcGastosU.controller.NecesidadController;  // ← IMPORTAR EL CONTROLLER
 import com.example.CalcGastosU.dto.NecesidadDTO;
 import com.example.CalcGastosU.dto.ResumenPresupuestoDTO;
 import com.example.CalcGastosU.entity.Necesidad;
@@ -11,8 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;  // ← CAMBIADO
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,15 +26,14 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = CalcGastosUApplication.class)  // ← CAMBIADO
-@AutoConfigureMockMvc
-@DisplayName("Pruebas del Controlador de Necesidades")  // ← AGREGADO
+@WebMvcTest(NecesidadController.class)  // ← CAMBIADO: carga SOLO el Controller
+@DisplayName("Pruebas del Controlador de Necesidades")
 class NecesidadControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockBean  // ← CAMBIADO: usa @MockBean en lugar de @Mock
     private NecesidadService necesidadService;
 
     @Autowired
