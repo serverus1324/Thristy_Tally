@@ -17,14 +17,14 @@ jobs:
       - name: Configurar JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'  # ✅ CAMBIADO A 17 (coincide con tu pom.xml)
+          java-version: '17' 
           distribution: 'temurin'
       
       - name: Build y pruebas con cobertura
-        run: mvn clean test jacoco:report  # ✅ UNIFICADO
+        run: mvn clean test jacoco:report  
       
       - name: Publicar reporte como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: reporte-jacoco
-          path: target/site/jacoco
+          path: CalcGastosU/target/site/jacoco
