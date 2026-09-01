@@ -23,13 +23,13 @@ jobs:
       - name: Build y pruebas con cobertura
         run: mvn clean test jacoco:report
       
-      - name: Verificar que el reporte existe
-        run: |
-          echo "=== Contenido de target/site/jacoco ==="
-          ls -la target/site/jacoco/ || echo "❌ No existe la carpeta"
-      
       - name: Publicar reporte como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: reporte-jacoco
-          path: CalcGastosU/target/site/jacoco  # ✅ Ruta desde la raíz
+          path: CalcGastosU/target/site/jacoco
+      
+      - name: Verificar variable de entorno  
+        env:
+          APP_ENV: ${{ secrets.APP_ENV_DEMO }}
+        run: echo "Ejecutando en el ambiente configurado"
