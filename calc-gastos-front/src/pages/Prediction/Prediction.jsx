@@ -155,7 +155,7 @@ export default function Prediction() {
 
       try {
         const periodosResp = await getData(
-          `periodos/${idEst}/por-estudiante`
+          `periodos/${idEst}/por-perfil`
         );
         const pList = periodosResp?.data || periodosResp || [];
         setPeriodos(Array.isArray(pList) ? pList : []);
@@ -184,7 +184,7 @@ export default function Prediction() {
 
       try {
         const n = await getData(
-          `necesidades/por-estudiante-periodo?idPerfil=${idEst}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-perfil-periodo?idPerfil=${idEst}&idPeriodo=${selectedPeriodo}`
         );
         setNecesidades(
           Array.isArray(n?.data) ? n.data : Array.isArray(n) ? n : []

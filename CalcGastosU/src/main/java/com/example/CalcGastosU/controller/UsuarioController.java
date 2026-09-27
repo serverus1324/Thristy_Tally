@@ -3,6 +3,7 @@ package com.example.CalcGastosU.controller;
 import com.example.CalcGastosU.dto.LoginRequestDTO;
 import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Usuario;
+import com.example.CalcGastosU.security.JwtService;
 import com.example.CalcGastosU.service.UsuarioService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private JwtService jwtService;
 
     @GetMapping
     public ResponseEntity<?> GetUsuarios() {
@@ -132,11 +136,16 @@ public class UsuarioController {
     public ResponseEntity<?> iniciarSesion(@RequestBody LoginRequestDTO request) {
         try {
             Usuario usuario = usuarioService.iniciarSesion(request.getUsername(), request.getPassword());
-            System.out.println(usuario);
+            String token = jwtService.generarToken(usuario);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("idUsuario", usuario.getId().toString());
-            response.put("idPerfil", usuario.getIdPerfil().toString());
+            response.put("token", token);
+            response.put("idUsuario", usuario.getId() != null ? usuario.getId().toString() : null);
+            response.put("idPerfil", usuario.getIdPerfil() != null ? usuario.getIdPerfil().toString() : null);
+            response.put("username", usuario.getUsername());
+            response.put("email", usuario.getEmail());
+            response.put("nombre", usuario.getNombre());
             response.put("mensaje", "Inicio de sesión EXITOSO");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -146,7 +155,8 @@ public class UsuarioController {
             HttpStatus status;
             if (e.getMessage().equals("Usuario no encontrado")) {
                 status = HttpStatus.NOT_FOUND;
-            } else if (e.getMessage().equals("Contraseña incorrecta")) {
+            } else if (e.getMessage().equals("Contraseña incorrecta") ||
+                       e.getMessage().equals("Usuario inactivo")) {
                 status = HttpStatus.UNAUTHORIZED;
             } else {
                 status = HttpStatus.INTERNAL_SERVER_ERROR;

@@ -145,38 +145,18 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
           return;
         }
 
-        // Presupuestos
-        try {
-          const presupuestosData = await getData(
-            `presupuestos/estudiante/${resolvedId}`
-          );
-          const arr = Array.isArray(presupuestosData?.data)
-            ? presupuestosData.data
-            : Array.isArray(presupuestosData)
-            ? presupuestosData
-            : [];
-          setPresupuestos(arr);
-        } catch (e) {
-          const msg = String(e?.message || "");
-          if (msg.includes("404")) {
-            setPresupuestos([]);
-          } else {
-            console.error("Error cargando presupuestos:", e);
-            toast.error("Error al cargar presupuestos. Intenta nuevamente.");
-          }
-        }
-
         // Periodos
+        let periodosArray = [];
         try {
           const periodosData = await getData(
-            `periodos/${resolvedId}/por-estudiante`
+            `periodos/${resolvedId}/por-perfil`
           );
-          const arr = Array.isArray(periodosData)
+          periodosArray = Array.isArray(periodosData)
             ? periodosData
             : Array.isArray(periodosData?.data)
             ? periodosData.data
             : [];
-          setPeriodos(arr);
+          setPeriodos(periodosArray);
         } catch (e) {
           const msg = String(e?.message || "");
           if (msg.includes("404")) {
@@ -186,6 +166,23 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
             toast.error("Error al cargar períodos. Intenta nuevamente.");
           }
         }
+
+        const presupuestosPorPeriodo = await Promise.all(
+          periodosArray.map(async (periodo) => {
+            const idPeriodo = periodo._id ?? periodo.id;
+            if (!/^[a-f\d]{24}$/i.test(String(idPeriodo ?? ""))) return null;
+            try {
+              const response = await getData(
+                `presupuestos/por-perfil-periodo?idPerfil=${resolvedId}&idPeriodo=${idPeriodo}`
+              );
+              return response?.data ?? response;
+            } catch (e) {
+              if (String(e?.message || "").includes("404")) return null;
+              throw e;
+            }
+          })
+        );
+        setPresupuestos(presupuestosPorPeriodo.filter(Boolean));
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {

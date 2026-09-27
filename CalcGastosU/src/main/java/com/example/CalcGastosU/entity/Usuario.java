@@ -1,6 +1,7 @@
 package com.example.CalcGastosU.entity;
 
 import com.example.CalcGastosU.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -83,7 +84,7 @@ public class Usuario {
         return this;
     }
 
-    @JsonProperty("password")
+    @JsonProperty(value = "password", access = JsonProperty.Access.WRITE_ONLY)
     public String getPassword() {
         return password;
     }
@@ -137,7 +138,7 @@ public class Usuario {
         this.activo = activo;
     }
 
-    @JsonProperty("codigoVerificacion")
+    @JsonIgnore
     public String getCodigoVerificacion() {
         return codigoVerificacion;
     }

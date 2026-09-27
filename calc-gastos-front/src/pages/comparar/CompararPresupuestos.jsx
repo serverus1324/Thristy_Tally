@@ -83,38 +83,40 @@ const CompararPresupuestos = () => {
     const cargar = async () => {
       try {
         setLoading(true);
-        // Presupuestos del estudiante
-        try {
-          const pData = await getData(
-            `presupuestos/estudiante/${idPerfil}`
-          );
-          const arr = Array.isArray(pData?.data)
-            ? pData.data
-            : Array.isArray(pData)
-            ? pData
-            : [];
-          setPresupuestos(arr);
-        } catch (e) {
-          const msg = String(e?.message || '');
-          if (msg.includes('404')) setPresupuestos([]);
-          else console.error(e);
-        }
         // Períodos del estudiante
+        let periodosArray = [];
         try {
           const perData = await getData(
-            `periodos/${idPerfil}/por-estudiante`
+            `periodos/${idPerfil}/por-perfil`
           );
-          const arr = Array.isArray(perData?.data)
+          periodosArray = Array.isArray(perData?.data)
             ? perData.data
             : Array.isArray(perData)
             ? perData
             : [];
-          setPeriodos(arr);
+          setPeriodos(periodosArray);
         } catch (e) {
           const msg = String(e?.message || '');
           if (msg.includes('404')) setPeriodos([]);
           else console.error(e);
         }
+
+        const presupuestosPorPeriodo = await Promise.all(
+          periodosArray.map(async (periodo) => {
+            const idPeriodo = periodo._id ?? periodo.id;
+            if (!/^[a-f\d]{24}$/i.test(String(idPeriodo ?? ''))) return null;
+            try {
+              const response = await getData(
+                `presupuestos/por-perfil-periodo?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
+              );
+              return response?.data ?? response;
+            } catch (e) {
+              if (String(e?.message || '').includes('404')) return null;
+              throw e;
+            }
+          })
+        );
+        setPresupuestos(presupuestosPorPeriodo.filter(Boolean));
       } finally {
         setLoading(false);
       }
@@ -162,7 +164,7 @@ const CompararPresupuestos = () => {
     try {
       // Necesidades por estudiante y periodo
       const nData = await getData(
-        `necesidades/por-estudiante-periodo?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
+        `necesidades/por-perfil-periodo?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
       );
       const needs = Array.isArray(nData?.data)
         ? nData.data

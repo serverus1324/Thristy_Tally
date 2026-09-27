@@ -22,6 +22,15 @@ const ViewLogin = () => {
       const response = await postData("usuarios/login", body);
       const idPerfil = response.idPerfil;
 
+      if (!response.token || !/^[a-f\d]{24}$/i.test(String(idPerfil ?? ""))) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("idPerfil");
+        toast.error("Esta cuenta no tiene un perfil válido asociado en la base de datos.");
+        return;
+      }
+
+      localStorage.setItem('authToken', response.token);
+
         try {
           localStorage.setItem('idPerfil', String(idPerfil));
         } catch {}

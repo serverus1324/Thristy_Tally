@@ -1,0 +1,22 @@
+{
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "CalcGastosUApplication",
+            "request": "launch",
+            "mainClass": "com.example.CalcGastosU.CalcGastosUApplication",
+            "projectName": "CalcGastosU",
+            "env": {
+                "JWT_SECRET": "QV4sPfgLbx4aCExctZE0ehEkP10sPsacum5Qfi1CR86"
+            }
+        }
+    ]
+}

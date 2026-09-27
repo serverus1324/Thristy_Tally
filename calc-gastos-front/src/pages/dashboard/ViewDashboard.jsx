@@ -314,8 +314,14 @@ const ViewDashboard = () => {
     try { idFromStorage = localStorage.getItem('idPerfil'); } catch {}
     const resolvedId = idFromLocation ?? idFromStorage;
 
-    if (resolvedId) setIdUsuario(resolvedId);
-    else setViewStatus(prev => ({ ...prev, loading: false }));
+    if (/^[a-f\d]{24}$/i.test(String(resolvedId ?? ""))) {
+      setIdUsuario(resolvedId);
+    } else {
+      setViewStatus({
+        loading: false,
+        error: "Esta cuenta no tiene un perfil válido asociado. Inicia sesión con una cuenta registrada."
+      });
+    }
   }, [location.state, navigate]);
 
   /* 2) Cargar usuario + periodos */
@@ -332,16 +338,12 @@ const ViewDashboard = () => {
       try {
         const [dataUsuarioResponse, periodosDataResponse] = await Promise.all([
           getData(`estudiantes/${idUsuario}`),
-          getData(`periodos/${idUsuario}/por-estudiante`)
+          getData(`periodos/${idUsuario}/por-perfil`)
         ]);
 
         if (!isActive) return;
 
-        setUserData(
-          dataUsuarioResponse?.data
-            ? dataUsuarioResponse
-            : { data: { nombre: 'Estudiante Demo' } }
-        );
+        setUserData(dataUsuarioResponse);
 
         const periodosArray = Array.isArray(periodosDataResponse)
           ? periodosDataResponse
@@ -406,7 +408,7 @@ const ViewDashboard = () => {
     const fetchPeriodData = async () => {
       try {
         const necesidadesDataResponse = await getData(
-          `necesidades/por-estudiante-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-perfil-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
         );
 
         if (!isActive) return;
@@ -455,7 +457,7 @@ const ViewDashboard = () => {
     if (selectedPeriodo && idUsuario) {
       try {
         const necesidadesData = await getData(
-          `necesidades/por-estudiante-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
+          `necesidades/por-perfil-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
         );
         setNecesidades(
           Array.isArray(necesidadesData?.data)
@@ -543,7 +545,7 @@ const ViewDashboard = () => {
 
       if (!idPres && idEst && idPer) {
         const presupuestoResp = await getData(
-          `presupuestos/por-estudiante-periodo?idPerfil=${idEst}&idPeriodo=${idPer}`
+          `presupuestos/por-perfil-periodo?idPerfil=${idEst}&idPeriodo=${idPer}`
         );
         const p = presupuestoResp?.data || presupuestoResp;
         idPres = p?.id || p?._id || null;
@@ -609,7 +611,7 @@ const ViewDashboard = () => {
 
       if (!idPres && idEst && idPer) {
         const presupuestoResp = await getData(
-          `presupuestos/por-estudiante-periodo?idPerfil=${idEst}&idPeriodo=${idPer}`
+          `presupuestos/por-perfil-periodo?idPerfil=${idEst}&idPeriodo=${idPer}`
         );
         const p = presupuestoResp?.data || presupuestoResp;
         idPres = p?.id || p?._id || null;
@@ -649,7 +651,7 @@ const ViewDashboard = () => {
         return;
       }
       const presupuestoResp = await getData(
-        `presupuestos/por-estudiante-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
+        `presupuestos/por-perfil-periodo?idPerfil=${idUsuario}&idPeriodo=${selectedPeriodo}`
       );
       const p = presupuestoResp?.data || presupuestoResp;
       const presupuestoId = p?.id || p?._id;

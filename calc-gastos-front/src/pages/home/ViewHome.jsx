@@ -23,20 +23,20 @@ const ViewHome = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const data = await getData(`perfiles/${idPerfil}`);
+        const data = await getData(`estudiantes/${idPerfil}`);
         setUserData(data);
       } catch (err) {
-        setError("Error al obtener los datos del usuario.");
+        setError(err.message || "No se pudieron cargar los datos del perfil.");
       } finally {
         setLoading(false);
       }
     };
 
-    if (idPerfil && idPerfil !== -2 && idPerfil !== "-2") {
+    if (/^[a-f\d]{24}$/i.test(String(idPerfil ?? ""))) {
       fetchUserData();
     } else {
+      setError("Esta cuenta no tiene un perfil válido asociado. Inicia sesión con una cuenta registrada.");
       setLoading(false);
-      setUserData(null);
     }
   }, [idPerfil]);
 
@@ -63,16 +63,15 @@ const ViewHome = () => {
         <header className="home2-nav">
           <Navbar userName={{ nombre: "" }} />
         </header>
-
         <main className="home2-hero">
           <div className="home2-state">
-            <h3 className="home2-error-title">Ocurrió un problema</h3>
+            <h3 className="home2-error-title">No se pudieron cargar tus datos</h3>
             <p className="home2-error-text">{error}</p>
             <button
               className="btn btn-primary w-100 btn-lg home2-btn"
               onClick={() => navigate("/login")}
             >
-              Ir a iniciar sesión
+              Volver a iniciar sesión
             </button>
           </div>
         </main>

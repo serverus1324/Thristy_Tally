@@ -1,6 +1,11 @@
 // Usar ruta relativa para aprovechar el proxy del dev server y evitar CORS
 const API_BASE_URL = '/api/v1';
 
+const getAuthHeaders = (headers = {}) => {
+    const token = localStorage.getItem('authToken');
+    return token ? { ...headers, Authorization: `Bearer ${token}` } : headers;
+};
+
     const handleResponse = async (response) => {
         if (!response.ok) {
             const errorData = await response.json();
@@ -22,9 +27,9 @@ const API_BASE_URL = '/api/v1';
         try {
             const response = await fetch(route, {
                 method: 'GET',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
                 mode: 'cors'
             });
             if (!response.ok) {
@@ -39,50 +44,6 @@ const API_BASE_URL = '/api/v1';
             const isNetwork = msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("ERR_CONNECTION_REFUSED");
             if (isNetwork) {
                 console.error('Error al realizar la petición GET:', error.message);
-                // Fallback solo en modo sin conexión
-                if (complement.includes("presupuestos")) {
-                    return {
-                        data: [
-                            { id: 1, descripcion: "Presupuesto Mensual", monto: 1000000 },
-                            { id: 2, descripcion: "Presupuesto Semestral", monto: 5000000 }
-                        ]
-                    };
-                }
-                if (complement.includes("periodos")) {
-                    return [
-                        { id: 1, nombre: "Enero 2023", fechaInicio: "2023-01-01", fechaFin: "2023-01-31" },
-                        { id: 2, nombre: "Febrero 2023", fechaInicio: "2023-02-01", fechaFin: "2023-02-28" }
-                    ];
-                }
-                // No retornar datos de demostración para estudiantes; mantener campos vacíos
-                if (complement.startsWith("estudiantes/")) {
-                    return {
-                        success: false,
-                        data: {},
-                        mensaje: "Sin conexión: datos de estudiante no disponibles"
-                    };
-                }
-                if (complement.includes("necesidades/por-estudiante-periodo")) {
-                    return {
-                        data: [
-                            { id: 1, nombre: "ALIMENTACION", descripcion: "Gasto estimado", monto: 200000, estado: "APROBADO", prioridad: "ALTA" },
-                            { id: 2, nombre: "TRANSPORTE", descripcion: "Gasto estimado", monto: 100000, estado: "PENDIENTE", prioridad: "MEDIA" }
-                        ]
-                    };
-                }
-                if (complement.includes("necesidades/resumen-presupuesto")) {
-                    return {
-                        data: {
-                            porcentajeConsumido: 20,
-                            totalAsignado: 1000000,
-                            totalGastado: 200000,
-                            disponible: 800000,
-                            descripcionPresupuesto: "Presupuesto Mensual (Simulado)",
-                            idPresupuesto: 1
-                        }
-                    };
-                }
-                return { data: [], message: "Datos simulados (modo sin conexión)" };
             }
             throw error;
         }
@@ -94,9 +55,9 @@ const API_BASE_URL = '/api/v1';
         try {
             const response = await fetch(route, {
                 method: 'POST',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
                 body: JSON.stringify(body),
             });
             if (!response.ok) {
@@ -107,19 +68,6 @@ const API_BASE_URL = '/api/v1';
             return data;
         } catch (error) {
             console.error('Error al realizar la petición POST:', error.message);
-            if (error.message.includes("Failed to fetch") || 
-                error.message.includes("NetworkError") ||
-                error.message.includes("ERR_CONNECTION_REFUSED")) {
-                // Fallback solo en modo sin conexión
-                return {
-                    success: true,
-                    data: { 
-                        id: Math.floor(Math.random() * 1000),
-                        ...body 
-                    },
-                    message: "Operación simulada exitosamente (modo sin conexión)"
-                };
-            }
             throw error;
         }
     }
@@ -130,9 +78,9 @@ const API_BASE_URL = '/api/v1';
         try {
             const response = await fetch(route, {
                 method: 'PUT',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
                 body: JSON.stringify(body),
             });
             if (!response.ok) {
@@ -153,9 +101,9 @@ const API_BASE_URL = '/api/v1';
         try {
             const response = await fetch(route, {
                 method: 'DELETE',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
             });
             if (!response.ok) {
                 const errorText = await response.text();
@@ -174,9 +122,9 @@ const API_BASE_URL = '/api/v1';
         try {
             const response = await fetch(route, {
                 method: 'PATCH',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
                 body: JSON.stringify(body),
             });
             if (!response.ok) {
@@ -200,6 +148,7 @@ const API_BASE_URL = '/api/v1';
         if (typeof classIndex === 'number') form.append('classIndex', String(classIndex));
         const response = await fetch(route, {
             method: 'POST',
+            headers: getAuthHeaders(),
             body: form
         });
         return handleResponse(response);
@@ -207,7 +156,7 @@ const API_BASE_URL = '/api/v1';
 
     export async function getPredictionStatus() {
         const route = `${API_BASE_URL}/predict/status`;
-        const response = await fetch(route, { method: 'GET' });
+        const response = await fetch(route, { method: 'GET', headers: getAuthHeaders() });
         return handleResponse(response);
     }
 
@@ -215,7 +164,7 @@ const API_BASE_URL = '/api/v1';
         const route = `${API_BASE_URL}/predict/score`;
         const response = await fetch(route, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(features)
         });
         return handleResponse(response);
@@ -224,19 +173,19 @@ const API_BASE_URL = '/api/v1';
     // Obtener esquema del modelo para construir formulario dinámico
     export async function getPredictionSchema() {
         const route = `${API_BASE_URL}/predict/schema`;
-        const response = await fetch(route, { method: 'GET' });
+        const response = await fetch(route, { method: 'GET', headers: getAuthHeaders() });
         return handleResponse(response);
     }
 
     export async function getModeloStatus() {
         const route = `/api/prediccion/status`;
-        const response = await fetch(route, { method: 'GET' });
+        const response = await fetch(route, { method: 'GET', headers: getAuthHeaders() });
         return handleResponse(response);
     }
 
     export async function getModeloSchema() {
         const route = `/api/prediccion/schema`;
-        const response = await fetch(route, { method: 'GET' });
+        const response = await fetch(route, { method: 'GET', headers: getAuthHeaders() });
         return handleResponse(response);
     }
 
@@ -245,7 +194,7 @@ const API_BASE_URL = '/api/v1';
         const route = `/api/prediccion/necesidad`;
         const response = await fetch(route, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(features)
         });
         return handleResponse(response);
@@ -287,7 +236,7 @@ const API_BASE_URL = '/api/v1';
 
     export async function getAdminDashboardMetrics() {
         const route = `${ADMIN_API_BASE}/dashboard-metrics`;
-        const response = await fetch(route, { method: 'GET' });
+        const response = await fetch(route, { method: 'GET', headers: getAuthHeaders() });
         return handleResponse(response);
     }
 
