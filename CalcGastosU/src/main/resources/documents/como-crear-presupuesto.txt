@@ -1,0 +1,1 @@
+Para crear un presupuesto debes ingresar un nombre y establecer el monto disponible. A partir de este presupuesto podrás organizar las diferentes necesidades que debes cubrir.

@@ -1,0 +1,1 @@
+Thrifty Tally compara el valor de las necesidades registradas con el monto disponible en el presupuesto. De esta manera puedes identificar si estás dentro del límite o si lo has superado.

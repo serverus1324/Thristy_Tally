@@ -98,6 +98,11 @@ public class SecurityConfig {
 
                         // Recuperación de contraseña
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                        
+                                                // ---------- RAG (público para el taller) ----------
+                        .requestMatchers(HttpMethod.POST, "/api/chat", "/api/chat/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/salud", "/api/salud/").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/consultas", "/api/consultas/").permitAll()
 
                         // ---------- SOLO ADMIN ----------
                         .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").hasRole("ADMIN")

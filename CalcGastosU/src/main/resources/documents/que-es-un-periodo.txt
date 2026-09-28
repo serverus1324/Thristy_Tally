@@ -1,0 +1,1 @@
+Un período representa un intervalo de tiempo determinado para organizar tus necesidades y presupuesto. Puedes establecer una fecha de inicio y una fecha de finalización.
