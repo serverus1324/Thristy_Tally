@@ -6,10 +6,10 @@ import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Necesidad;
 import com.example.CalcGastosU.entity.Periodo;
 import com.example.CalcGastosU.entity.Presupuesto;
-import com.example.CalcGastosU.repository.PerfilRepository;
 import com.example.CalcGastosU.repository.NecesidadRepository;
 import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.repository.PresupuestoRepository;
+import com.example.CalcGastosU.service.PerfilService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class NecesidadService {
     private NecesidadRepository necesidadRepository;
 
     @Autowired
-    private PerfilRepository perfilRepository;
+    private PerfilService perfilService;
 
     @Autowired
     private PeriodoRepository periodoRepository;
@@ -49,8 +49,7 @@ public class NecesidadService {
         List<Necesidad> necesidadesGuardadas = new ArrayList<>();
 
         for (NecesidadDTO dto : dtoList) {
-            Perfil perfil = perfilRepository.findById(dto.getIdPerfil())
-                    .orElseThrow(() -> new RuntimeException("Perfil no encontrado con ID: " + dto.getIdPerfil()));
+                Perfil perfil = perfilService.getOrCreateForId(dto.getIdPerfil());
 
             Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                     .orElseThrow(() -> new RuntimeException("Periodo no encontrado con ID: " + dto.getIdPeriodo()));
@@ -128,8 +127,7 @@ public class NecesidadService {
     }
 
     public Necesidad guardarConValidacionPresupuesto(NecesidadDTO dto, boolean forzarGuardado) {
-        Perfil perfil = perfilRepository.findById(dto.getIdPerfil())
-                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+        Perfil perfil = perfilService.getOrCreateForId(dto.getIdPerfil());
 
         Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                 .orElseThrow(() -> new RuntimeException("Periodo no encontrado"));

@@ -104,6 +104,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/salud", "/api/salud/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/consultas", "/api/consultas/").permitAll()
 
+                        // ---------- Predicción WEKA (públicas durante signup/post-sin-auth) ----------
+                        .requestMatchers(HttpMethod.GET, "/api/prediccion/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/prediccion/**").permitAll()
+
                         // ---------- SOLO ADMIN ----------
                         .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/usuarios/**").hasRole("ADMIN")

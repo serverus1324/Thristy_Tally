@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getData } from "../../api/api";
 import Navbar from "../../components/navbar/Navbar";
+import ChatBot from "../../components/chatbot/ChatBot";
 import "./home.css";
 
 const ViewHome = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [showTipsSidebar, setShowTipsSidebar] = useState(false);
 
   const [idPerfil] = useState(() => {
     const fromState = location.state?.idPerfil;
@@ -80,12 +80,14 @@ const ViewHome = () => {
   }
 
   const getIdE = () => {
+    const idFromProfile = userData?.data?.idPerfil ?? userData?.data?._id;
+    if (idFromProfile && String(idFromProfile).trim()) {
+      return String(idFromProfile).trim();
+    }
+
     let idFromStorage = null;
     try { idFromStorage = localStorage.getItem("idPerfil"); } catch {}
-    return (
-      (idFromStorage && String(idFromStorage).trim()) ||
-      (userData?.data?.idPerfil ? String(userData.data.idPerfil) : "")
-    );
+    return idFromStorage ? String(idFromStorage).trim() : "";
   };
 
   const toDashboard = () => {
@@ -280,66 +282,8 @@ const ViewHome = () => {
           </div>
         </div>
 
-        {/* Floating Quick Tips Button */}
-        <button 
-          className="home2-floating-tips-btn"
-          onClick={() => setShowTipsSidebar(!showTipsSidebar)}
-        >
-          <span>💡</span>
-        </button>
-
-        {/* Quick Tips Sidebar */}
-        <div className={`home2-tips-sidebar-overlay ${showTipsSidebar ? 'active' : ''}`}>
-          <div className={`home2-tips-sidebar-panel ${showTipsSidebar ? 'active' : ''}`}>
-            <div className="home2-tips-sidebar-header">
-              <h3>💡 Consejos rápidos</h3>
-              <button 
-                className="home2-tips-sidebar-close"
-                onClick={() => setShowTipsSidebar(false)}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="home2-tips-list">
-              <div className="home2-tip-item">
-                <div className="home2-tip-icon-wrapper">
-                  <span className="home2-tip-emoji">📝</span>
-                </div>
-                <div className="home2-tip-text">
-                  <h4>Registra gastos diariamente</h4>
-                  <p>Evita sorpresas al final del mes</p>
-                </div>
-              </div>
-              <div className="home2-tip-item">
-                <div className="home2-tip-icon-wrapper">
-                  <span className="home2-tip-emoji">🎯</span>
-                </div>
-                <div className="home2-tip-text">
-                  <h4>Prioriza necesidades</h4>
-                  <p>Foco en lo realmente importante</p>
-                </div>
-              </div>
-              <div className="home2-tip-item">
-                <div className="home2-tip-icon-wrapper">
-                  <span className="home2-tip-emoji">📉</span>
-                </div>
-                <div className="home2-tip-text">
-                  <h4>Revisa tu progreso</h4>
-                  <p>Semanalmente revisa tus estadísticas</p>
-                </div>
-              </div>
-              <div className="home2-tip-item">
-                <div className="home2-tip-icon-wrapper">
-                  <span className="home2-tip-emoji">💰</span>
-                </div>
-                <div className="home2-tip-text">
-                  <h4>Ahorra constantemente</h4>
-                  <p>Pequeños ahorros generan grandes cambios</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Asistente de IA flotante (reemplaza al panel de consejos) */}
+        <ChatBot />
       </main>
     </>
   );

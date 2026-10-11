@@ -7,8 +7,8 @@ import com.example.CalcGastosU.entity.Necesidad;
 import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Periodo;
 import com.example.CalcGastosU.entity.Presupuesto;
+import com.example.CalcGastosU.service.PerfilService;
 import com.example.CalcGastosU.repository.NecesidadRepository;
-import com.example.CalcGastosU.repository.PerfilRepository;
 import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.repository.PresupuestoRepository;
 import org.bson.types.ObjectId;
@@ -37,7 +37,7 @@ class NecesidadServiceTest {
     private NecesidadRepository necesidadRepository;
 
     @Mock
-    private PerfilRepository perfilRepository;
+    private PerfilService perfilService;
 
     @Mock
     private PeriodoRepository periodoRepository;
@@ -207,7 +207,7 @@ class NecesidadServiceTest {
             // Arrange
             List<NecesidadDTO> dtoList = Arrays.asList(necesidadDTO);
             
-            when(perfilRepository.findById(idPerfil)).thenReturn(Optional.of(perfil));
+            when(perfilService.getOrCreateForId(idPerfil)).thenReturn(perfil);
             when(periodoRepository.findById(idPeriodo)).thenReturn(Optional.of(periodo));
             when(necesidadRepository.save(any(Necesidad.class))).thenReturn(necesidad1);
 
@@ -217,7 +217,7 @@ class NecesidadServiceTest {
             // Assert
             assertNotNull(resultado);
             assertEquals(1, resultado.size());
-            verify(perfilRepository, times(1)).findById(idPerfil);
+            verify(perfilService, times(1)).getOrCreateForId(idPerfil);
             verify(periodoRepository, times(1)).findById(idPeriodo);
             verify(necesidadRepository, times(1)).save(any(Necesidad.class));
         }
@@ -251,7 +251,8 @@ class NecesidadServiceTest {
         void testSavePerfilNoEncontrado() {
             // Arrange
             List<NecesidadDTO> dtoList = Arrays.asList(necesidadDTO);
-            when(perfilRepository.findById(idPerfil)).thenReturn(Optional.empty());
+            when(perfilService.getOrCreateForId(idPerfil))
+                .thenThrow(new RuntimeException("Perfil no encontrado con ID: " + idPerfil));
 
             // Act & Assert
             RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -267,7 +268,7 @@ class NecesidadServiceTest {
         void testSavePeriodoNoEncontrado() {
             // Arrange
             List<NecesidadDTO> dtoList = Arrays.asList(necesidadDTO);
-            when(perfilRepository.findById(idPerfil)).thenReturn(Optional.of(perfil));
+            when(perfilService.getOrCreateForId(idPerfil)).thenReturn(perfil);
             when(periodoRepository.findById(idPeriodo)).thenReturn(Optional.empty());
 
             // Act & Assert
@@ -450,7 +451,7 @@ class NecesidadServiceTest {
         @DisplayName("Debería guardar cuando el presupuesto existe y no excede")
         void testGuardarConValidacionExitoso() {
             // Arrange
-            when(perfilRepository.findById(idPerfil)).thenReturn(Optional.of(perfil));
+            when(perfilService.getOrCreateForId(idPerfil)).thenReturn(perfil);
             when(periodoRepository.findById(idPeriodo)).thenReturn(Optional.of(periodo));
             when(presupuestoRepository.findById(idPresupuesto))
                 .thenReturn(Optional.of(presupuesto));
@@ -474,7 +475,7 @@ class NecesidadServiceTest {
         void testGuardarExcedePresupuesto() {
             // Arrange
             necesidadDTO.setMonto(800.0); // 300 + 800 = 1100 > 1000
-            when(perfilRepository.findById(idPerfil)).thenReturn(Optional.of(perfil));
+            when(perfilService.getOrCreateForId(idPerfil)).thenReturn(perfil);
             when(periodoRepository.findById(idPeriodo)).thenReturn(Optional.of(periodo));
             when(presupuestoRepository.findById(idPresupuesto))
                 .thenReturn(Optional.of(presupuesto));
@@ -495,7 +496,7 @@ class NecesidadServiceTest {
 void testGuardarExcedePresupuestoForzado() {
     // Arrange
     necesidadDTO.setMonto(800.0);
-    when(perfilRepository.findById(idPerfil)).thenReturn(Optional.of(perfil));
+    when(perfilService.getOrCreateForId(idPerfil)).thenReturn(perfil);
     when(periodoRepository.findById(idPeriodo)).thenReturn(Optional.of(periodo));
     when(presupuestoRepository.findById(idPresupuesto))
         .thenReturn(Optional.of(presupuesto));

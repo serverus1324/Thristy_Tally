@@ -30,6 +30,12 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/api\/admin/, '/api/admin'),
       },
+      // Rutas genéricas /api/* (ej: /api/chat, /api/salud, /api/consultas)
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

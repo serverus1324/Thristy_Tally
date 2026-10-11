@@ -1,9 +1,11 @@
 package com.example.CalcGastosU.service;
 
 import com.example.CalcGastosU.dto.PerfilDTO;
+import com.example.CalcGastosU.entity.Estudiante;
 import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Usuario;
 import com.example.CalcGastosU.enums.Role;
+import com.example.CalcGastosU.repository.EstudianteRepository;
 import com.example.CalcGastosU.repository.PerfilRepository;
 import com.example.CalcGastosU.repository.UsuarioRepository;
 import com.example.CalcGastosU.security.SecurityUtils;
@@ -25,6 +27,9 @@ public class PerfilService {
     private PerfilRepository perfilRepository;
 
     @Autowired
+    private EstudianteRepository estudianteRepository;
+
+    @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
@@ -39,6 +44,32 @@ public class PerfilService {
     
     return perfilRepository.findById(id);
 }
+
+    public Perfil getOrCreateForId(ObjectId idPerfil) {
+        Optional<Perfil> perfilExistente = perfilRepository.findById(idPerfil);
+        if (perfilExistente.isPresent()) {
+            return perfilExistente.get();
+        }
+
+        Perfil perfil = new Perfil();
+        perfil.setId(idPerfil);
+
+        Optional<Estudiante> estudiante = estudianteRepository.findById(idPerfil);
+        if (estudiante.isPresent()) {
+            perfil.setNombre(estudiante.get().getNombre());
+            perfil.setEmail(estudiante.get().getEmail());
+            perfil.setTelefono(estudiante.get().getTelefono());
+            perfil.setTipoUsuario(estudiante.get().getTipoUsuario());
+        } else {
+            Usuario usuario = usuarioRepository.findByIdPerfil(idPerfil)
+                    .orElseThrow(() -> new RuntimeException(
+                            "No existe un perfil ni una cuenta asociada al ID: " + idPerfil));
+            perfil.setNombre(usuario.getNombre());
+            perfil.setEmail(usuario.getEmail());
+        }
+
+        return perfilRepository.save(perfil);
+    }
 
     public Perfil save(PerfilDTO dto) {
         // 1. Primero creamos y guardamos el Perfil

@@ -5,10 +5,10 @@ import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Necesidad;
 import com.example.CalcGastosU.entity.Periodo;
 import com.example.CalcGastosU.entity.Presupuesto;
-import com.example.CalcGastosU.repository.PerfilRepository;
 import com.example.CalcGastosU.repository.NecesidadRepository;
 import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.repository.PresupuestoRepository;
+import com.example.CalcGastosU.service.PerfilService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class PresupuestoService {
     private PresupuestoRepository presupuestoRepository;
 
     @Autowired
-    private PerfilRepository perfilRepository;
+    private PerfilService perfilService;
 
     @Autowired
     private PeriodoRepository periodoRepository;
@@ -46,8 +46,7 @@ public class PresupuestoService {
     }
 
     public Presupuesto save(PresupuestoDTO dto) {
-        Perfil perfil = (Perfil) perfilRepository.findById(dto.getIdPerfil())
-                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+        Perfil perfil = perfilService.getOrCreateForId(dto.getIdPerfil());
 
         Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                 .orElseThrow(() -> new RuntimeException("Periodo no encontrado"));
@@ -65,8 +64,7 @@ public class PresupuestoService {
         Presupuesto presupuesto = presupuestoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
-        Perfil perfil = perfilRepository.findById(dto.getIdPerfil())
-                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+        Perfil perfil = perfilService.getOrCreateForId(dto.getIdPerfil());
 
         Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                 .orElseThrow(() -> new RuntimeException("Periodo no encontrado"));

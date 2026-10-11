@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ChatBot from "../../components/chatbot/ChatBot";
 import "./inicio.css";
 
 const ViewInicio = () => {
@@ -188,11 +189,14 @@ const ViewInicio = () => {
       <footer className="footer-section">
         <div className="footer-inner">
           <div className="footer-brand">
-            Thrifty <span>Tally</span>
+          Thrifty <span>Tally</span>
           </div>
           <p className="footer-copy">© 2025 Thrifty Tally. Todos los derechos reservados.</p>
         </div>
       </footer>
+
+      {/* Asistente de IA flotante */}
+      <ChatBot />
     </>
   );
 };

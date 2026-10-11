@@ -240,4 +240,22 @@ const getAuthHeaders = (headers = {}) => {
         return handleResponse(response);
     }
 
+    // ===== Chat IA (RAG / Asistente virtual) =====
+    // Endpoint público POST /api/chat  -> body { pregunta }  -> { respuesta }
+    export async function chat(pregunta) {
+        const route = `/api/chat`;
+        const response = await fetch(route, {
+            method: 'POST',
+            headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ pregunta })
+        });
+        return handleResponse(response);
+    }
+
+    export async function getChatHistorial() {
+        const route = `/api/consultas`;
+        const response = await fetch(route, { method: 'GET', headers: getAuthHeaders() });
+        return handleResponse(response);
+    }
+
 

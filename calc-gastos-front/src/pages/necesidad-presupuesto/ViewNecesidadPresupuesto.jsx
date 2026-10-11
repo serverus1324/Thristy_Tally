@@ -52,6 +52,8 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
     typeof v === "string" &&
     (/^[a-fA-F0-9]{24}$/.test(v) || /^\d+$/.test(v));
 
+  const getEntityId = (entity) => normalizeId(entity?._id ?? entity?.id);
+
   const storeEstudianteIdIfValid = (v) => {
     if (isValidId(v)) {
       try {
@@ -60,25 +62,12 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
     }
   };
 
-  let idPerfil = "";
-  try {
-    const v = localStorage.getItem("idPerfil");
-    const vNorm = normalizeId(v);
-    if (isValidId(vNorm)) idPerfil = vNorm;
-  } catch {}
-
-  if (!isValidId(idPerfil)) {
-    const idFromState =
-      location.state?.idPerfil ??
-      location.state?.idUsuario ??
-      location.state?.userData?.data?.idPerfil ??
-      location.state?.userData?.data?._id;
-    const idFromStateNorm = normalizeId(idFromState);
-    if (isValidId(idFromStateNorm)) {
-      idPerfil = idFromStateNorm;
-      storeEstudianteIdIfValid(idPerfil);
-    }
-  }
+  const idFromState =
+    location.state?.idPerfil ??
+    location.state?.idUsuario ??
+    location.state?.userData?.data?.idPerfil ??
+    location.state?.userData?.data?._id;
+  let idPerfil = normalizeId(idFromState);
 
   if (!isValidId(idPerfil)) {
     const vNorm = normalizeId(idUsuario);
@@ -87,6 +76,15 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
       storeEstudianteIdIfValid(idPerfil);
     }
   }
+
+  if (!isValidId(idPerfil)) {
+    try {
+      const vNorm = normalizeId(localStorage.getItem("idPerfil"));
+      if (isValidId(vNorm)) idPerfil = vNorm;
+    } catch {}
+  }
+
+  storeEstudianteIdIfValid(idPerfil);
 
   // ---------- State principal ----------
   const [step, setStep] = useState(1);
@@ -312,6 +310,13 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
           periodoResponse?.id || periodoResponse?.data?.id || idPeriodoFinal;
       }
 
+      idPeriodoFinal = normalizeId(idPeriodoFinal);
+      if (!isValidId(idPeriodoFinal)) {
+        toast.error("Selecciona un período existente o crea uno válido antes de continuar.");
+        setLoading(false);
+        return;
+      }
+
       // 2) Crear presupuesto si hace falta
       if (!idPresupuestoFinal && presupuesto.nombre && presupuesto.monto) {
         if (!idPeriodoFinal) {
@@ -341,6 +346,13 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
             );
           } catch {}
         }
+      }
+
+      idPresupuestoFinal = normalizeId(idPresupuestoFinal);
+      if (!isValidId(idPresupuestoFinal)) {
+        toast.error("Selecciona un presupuesto existente o crea uno válido antes de continuar.");
+        setLoading(false);
+        return;
       }
 
       // Validaciones finales de periodo/presupuesto
@@ -451,7 +463,14 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
       setUltimoPresupuestoId("");
     } catch (error) {
       console.error(error);
-      toast.error("Error al guardar los datos. Inténtalo nuevamente.");
+      const errorMessage = String(error?.message || "");
+      if (errorMessage.includes("Perfil no encontrado")) {
+        toast.error(
+          "No se encontró un perfil asociado a esta cuenta. Cierra sesión e inicia nuevamente; si continúa, contacta soporte."
+        );
+      } else {
+        toast.error("Error al guardar los datos. Inténtalo nuevamente.");
+      }
     } finally {
       setLoading(false);
     }
@@ -548,11 +567,14 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                           onChange={handlePresupuestoSeleccionado}
                         >
                           <option value="">-- Seleccionar presupuesto --</option>
-                          {presupuestos.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.descripcion} - ${p.monto}
-                            </option>
-                          ))}
+                          {presupuestos.map((p) => {
+                            const id = getEntityId(p);
+                            return isValidId(id) ? (
+                              <option key={id} value={id}>
+                                {p.descripcion} - ${p.monto}
+                              </option>
+                            ) : null;
+                          })}
                         </select>
                       </div>
                     )}
@@ -617,19 +639,22 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                           onChange={handlePeriodoSeleccionado}
                         >
                           <option value="">-- Seleccionar período --</option>
-                          {periodos.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.nombre} (
-                              {new Date(
-                                p.fechaInicio
-                              ).toLocaleDateString()}{" "}
-                              -{" "}
-                              {new Date(
-                                p.fechaFin
-                              ).toLocaleDateString()}
-                              )
-                            </option>
-                          ))}
+                          {periodos.map((p) => {
+                            const id = getEntityId(p);
+                            return isValidId(id) ? (
+                              <option key={id} value={id}>
+                                {p.nombre} (
+                                {new Date(
+                                  p.fechaInicio
+                                ).toLocaleDateString()}{" "}
+                                -{" "}
+                                {new Date(
+                                  p.fechaFin
+                                ).toLocaleDateString()}
+                                )
+                              </option>
+                            ) : null;
+                          })}
                         </select>
                       </div>
                     )}
@@ -872,7 +897,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                       <p>
                         {presupuestoSeleccionado
                           ? presupuestos.find(
-                              (p) => p.id === presupuestoSeleccionado
+                              (p) => getEntityId(p) === presupuestoSeleccionado
                             )?.descripcion
                           : presupuesto.nombre || "Sin nombre"}
                         {" - "}
@@ -880,7 +905,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                         {presupuestoSeleccionado
                           ? presupuestos
                               .find(
-                                (p) => p.id === presupuestoSeleccionado
+                                (p) => getEntityId(p) === presupuestoSeleccionado
                               )
                               ?.monto?.toLocaleString()
                           : presupuesto.monto}
@@ -892,14 +917,14 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                       <p>
                         {periodoSeleccionado
                           ? periodos.find(
-                              (p) => p.id === periodoSeleccionado
+                              (p) => getEntityId(p) === periodoSeleccionado
                             )?.nombre
                           : periodo.nombre}{" "}
                         (
                         {periodoSeleccionado
                           ? new Date(
                               periodos.find(
-                                (p) => p.id === periodoSeleccionado
+                                (p) => getEntityId(p) === periodoSeleccionado
                               )?.fechaInicio
                             ).toLocaleDateString()
                           : periodo.fechaInicio}{" "}
@@ -907,7 +932,7 @@ const ViewNecesidadPresupuesto = ({ idUsuario }) => {
                         {periodoSeleccionado
                           ? new Date(
                               periodos.find(
-                                (p) => p.id === periodoSeleccionado
+                                (p) => getEntityId(p) === periodoSeleccionado
                               )?.fechaFin
                             ).toLocaleDateString()
                           : periodo.fechaFin}
