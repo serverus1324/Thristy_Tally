@@ -12,6 +12,6 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 # Copiamos el .jar generado en la etapa anterior
 COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8080
+EXPOSE 8081
 # Comando para arrancar tu backend
 ENTRYPOINT ["java", "-jar", "app.jar"]
