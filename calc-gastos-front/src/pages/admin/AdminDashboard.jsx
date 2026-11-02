@@ -1,214 +1,261 @@
-import React, { useState, useEffect } from "react";
-import toast, { Toaster } from "react-hot-toast";
-import { Link } from "react-router-dom";
-import { getAdminDashboardMetrics } from "../../api/api";
-import Navbar from "../../components/navbar/Navbar";
-import "../recover-password/recover-password.css";
+import React, { useState, useEffect } from 'react';
+import { getAdminDashboardMetrics, getModeloStatus } from '../../api/api';
+import { Line, Doughnut } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+} from 'chart.js';
+import '../../components/admin/AdminStyles.css';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+);
+
+const IconUsers = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+);
+
+const IconTarget = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+);
+
+const IconWallet = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>
+);
+
+const IconBot = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+);
 
 const AdminDashboard = () => {
     const [metrics, setMetrics] = useState(null);
+    const [latestUsers, setLatestUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [users, setUsers] = useState([
-        { id: 1, name: "Ana García", email: "ana@email.com", active: true },
-        { id: 2, name: "Carlos López", email: "carlos@email.com", active: true },
-        { id: 3, name: "María Rodríguez", email: "maria@email.com", active: true },
-        { id: 4, name: "Pedro Martínez", email: "pedro@email.com", active: false },
-    ]);
-    const [modelTraining, setModelTraining] = useState(false);
+    const [modelStatus, setModelStatus] = useState(null);
+    const [modelLoading, setModelLoading] = useState(true);
 
     useEffect(() => {
-        const fetchMetrics = async () => {
-            try {
-                const data = await getAdminDashboardMetrics();
-                setMetrics(data.data);
-            } catch (error) {
-                console.error("Error fetching metrics:", error);
-                // Fallback to default metrics
-                setMetrics({
-                    usuariosTotales: 120,
-                    modelosEntrenados: 4,
-                    logsErrores: 0
-                });
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchMetrics();
+        fetchModelStatus();
     }, []);
 
-    const toggleUserActive = (userId) => {
-        setUsers(users.map(user => 
-            user.id === userId ? { ...user, active: !user.active } : user
-        ));
-        toast.success("Estado del usuario actualizado");
+    const fetchMetrics = async () => {
+        try {
+            const data = await getAdminDashboardMetrics();
+            setMetrics(data.data);
+            setLatestUsers(data.ultimosUsuarios || []);
+        } catch (error) {
+            console.error("Error fetching metrics:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const retrainModel = () => {
-        setModelTraining(true);
-        toast.success("Reentrenamiento del modelo iniciado...");
-        
-        // Simulate training
-        setTimeout(() => {
-            setModelTraining(false);
-            toast.success("Modelo reentrenado exitosamente");
-        }, 3000);
+    const fetchModelStatus = async () => {
+        try {
+            const data = await getModeloStatus();
+            setModelStatus(data);
+        } catch (error) {
+            console.error("Error fetching model status:", error);
+        } finally {
+            setModelLoading(false);
+        }
+    };
+
+    const lineData = {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        datasets: [
+            {
+                label: 'Usuarios',
+                data: [12, 19, 3, 5, 2, 3, 7],
+                borderColor: '#3b82f6',
+                tension: 0.4,
+            },
+            {
+                label: 'Consultas',
+                data: [2, 3, 20, 5, 1, 4, 10],
+                borderColor: '#8b5cf6',
+                tension: 0.4,
+            }
+        ],
+    };
+
+    const doughnutData = {
+        labels: ['Activos', 'Inactivos'],
+        datasets: [
+            {
+                data: [metrics?.usuariosActivos || 0, (metrics?.usuariosTotales - metrics?.usuariosActivos) || 0],
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderWidth: 0,
+            },
+        ],
     };
 
     return (
-        <div className="admin-dashboard">
-            <Navbar userName={{ nombre: "Admin" }} />
-            
-            <div style={{ marginTop: "40px" }}>
-                <div className="admin-dashboard-header">
-                    <h1 className="admin-dashboard-title">Panel de Administración</h1>
-                    <p className="admin-dashboard-subtitle">Gestiona usuarios, modelos y métricas de la plataforma</p>
-                </div>
-
-                <div className="admin-grid">
-                    {/* Card 1: Gestión de Usuarios */}
-                    <div className="admin-card" style={{ gridColumn: "span 2" }}>
-                        <div className="admin-card-header">
-                            <h2 className="admin-card-title">Gestión de Usuarios</h2>
-                            <div className="admin-card-icon blue">👥</div>
-                        </div>
-                        
-                        <div style={{ overflowX: "auto" }}>
-                            <table className="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>Usuario</th>
-                                        <th>Correo</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {users.map(user => (
-                                        <tr key={user.id}>
-                                            <td>
-                                                <div className="admin-user-name">{user.name}</div>
-                                            </td>
-                                            <td>
-                                                <div className="admin-user-email">{user.email}</div>
-                                            </td>
-                                            <td>
-                                                <span style={{
-                                                    padding: "4px 12px",
-                                                    borderRadius: "20px",
-                                                    fontSize: "12px",
-                                                    fontWeight: "600",
-                                                    backgroundColor: user.active ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)",
-                                                    color: user.active ? "#10b981" : "#ef4444"
-                                                }}>
-                                                    {user.active ? "Activo" : "Inactivo"}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <button 
-                                                    className="admin-btn admin-btn-danger"
-                                                    onClick={() => toggleUserActive(user.id)}
-                                                >
-                                                    {user.active ? "Desactivar" : "Activar"}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Card 2: Módulo de IA */}
-                    <div className="admin-card">
-                        <div className="admin-card-header">
-                            <h2 className="admin-card-title">Módulo de IA (J48)</h2>
-                            <div className="admin-card-icon teal">🤖</div>
-                        </div>
-                        
-                        <div className="admin-ai-status">
-                            <div className="admin-ai-dot"></div>
-                            <div className="admin-ai-text">
-                                <strong>Estado:</strong> Modelo activo y funcionando
-                            </div>
-                        </div>
-                        
-                        <div style={{
-                            padding: "16px",
-                            background: "rgba(15, 23, 42, 0.6)",
-                            borderRadius: "14px",
-                            marginBottom: "20px"
-                        }}>
-                            <div style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px" }}>
-                                Último entrenamiento
-                            </div>
-                            <div style={{ fontSize: "15px", color: "#f8fafc", fontWeight: "600" }}>
-                                Hoy, 10:30 AM
-                            </div>
-                        </div>
-                        
-                        <button 
-                            className="admin-btn admin-btn-primary"
-                            onClick={retrainModel}
-                            disabled={modelTraining}
-                        >
-                            {modelTraining ? "Reentrenando..." : "Reentrenar algoritmo predictivo"}
-                        </button>
-                    </div>
-
-                    {/* Card 3: Analítica */}
-                    <div className="admin-card">
-                        <div className="admin-card-header">
-                            <h2 className="admin-card-title">Analítica de la Plataforma</h2>
-                            <div className="admin-card-icon orange">📊</div>
-                        </div>
-                        
-                        {loading ? (
-                            <div style={{ textAlign: "center", padding: "40px 0" }}>
-                            <div style={{ color: "#64748b" }}>Cargando métricas...</div>
-                        </div>
-                        ) : (
-                            <div className="admin-metrics-grid">
-                                <div className="admin-metric-card">
-                                    <div className="admin-metric-label">Usuarios Totales</div>
-                                    <div className="admin-metric-value">{metrics?.usuariosTotales}</div>
-                                </div>
-                                <div className="admin-metric-card">
-                                    <div className="admin-metric-label">Modelos Entrenados</div>
-                                    <div className="admin-metric-value">{metrics?.modelosEntrenados}</div>
-                                </div>
-                                <div className="admin-metric-card">
-                                    <div className="admin-metric-label">Logs de Errores</div>
-                                    <div className="admin-metric-value">{metrics?.logsErrores}</div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div style={{ marginTop: "32px" }}>
-                    <Link to="/home" style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        color: "#64748b",
-                        fontSize: "14px",
-                        textDecoration: "none",
-                        transition: "color 0.3s ease"
-                    }}
-                    onMouseOver={(e) => e.target.style.color = "#94a3b8"}
-                    onMouseOut={(e) => e.target.style.color = "#64748b"}
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                        Volver al inicio
-                    </Link>
+        <div className="admin-view">
+            <div className="admin-header">
+                <div className="admin-welcome">
+                    <h1>Dashboard</h1>
+                    <p>Resumen general del estado de la plataforma Thrifty Tally</p>
                 </div>
             </div>
 
-            <Toaster />
+            <div className="admin-stats-grid">
+                <div className="admin-stat-card">
+                    <div className="admin-stat-header">
+                        <span className="admin-stat-title">Usuarios Totales</span>
+                        <div className="admin-stat-icon"><IconUsers /></div>
+                    </div>
+                    <div className="admin-stat-value">{loading ? '...' : metrics?.usuariosTotales}</div>
+                    <div className="admin-stat-footer">
+                        <span>↑ 12%</span> vs mes anterior
+                    </div>
+                </div>
+
+                <div className="admin-stat-card">
+                    <div className="admin-stat-header">
+                        <span className="admin-stat-title">Necesidades</span>
+                        <div className="admin-stat-icon"><IconTarget /></div>
+                    </div>
+                    <div className="admin-stat-value">{loading ? '...' : metrics?.totalNecesidades}</div>
+                    <div className="admin-stat-footer">
+                        <span>↑ 8%</span> vs mes anterior
+                    </div>
+                </div>
+
+                <div className="admin-stat-card">
+                    <div className="admin-stat-header">
+                        <span className="admin-stat-title">Presupuestos</span>
+                        <div className="admin-stat-icon"><IconWallet /></div>
+                    </div>
+                    <div className="admin-stat-value">{loading ? '...' : metrics?.totalPresupuestos}</div>
+                    <div className="admin-stat-footer">
+                        <span>↑ 5%</span> vs mes anterior
+                    </div>
+                </div>
+
+                <div className="admin-stat-card">
+                    <div className="admin-stat-header">
+                        <span className="admin-stat-title">Consultas IA</span>
+                        <div className="admin-stat-icon"><IconBot /></div>
+                    </div>
+                    <div className="admin-stat-value">{loading ? '...' : metrics?.totalConsultas}</div>
+                    <div className="admin-stat-footer">
+                        <span>↑ 24%</span> vs mes anterior
+                    </div>
+                </div>
+            </div>
+
+            <div className="admin-content-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: '24px' }}>
+                <div className="admin-card">
+                    <div className="admin-card-header">
+                        <h2 className="admin-card-title">Evolución de Actividad</h2>
+                    </div>
+                    <div style={{ height: '250px' }}>
+                        <Line data={lineData} options={{ maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }} />
+                    </div>
+                </div>
+                <div className="admin-card">
+                    <div className="admin-card-header">
+                        <h2 className="admin-card-title">Distribución de Usuarios</h2>
+                    </div>
+                    <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
+                        <Doughnut data={doughnutData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="admin-content-grid">
+                <div className="admin-card">
+                    <div className="admin-card-header">
+                        <h2 className="admin-card-title">Estado del Sistema</h2>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981' }}></div>
+                                <span>Backend (Spring Boot)</span>
+                            </div>
+                            <span style={{ color: '#10b981', fontSize: '13px', fontWeight: 600 }}>En línea</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981' }}></div>
+                                <span>Base de Datos (MongoDB)</span>
+                            </div>
+                            <span style={{ color: '#10b981', fontSize: '13px', fontWeight: 600 }}>Conectado</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: modelStatus?.ready ? '#10b981' : '#f59e0b' }}></div>
+                                <span>Modelo IA (J48)</span>
+                            </div>
+                            <span style={{ color: modelStatus?.ready ? '#10b981' : '#f59e0b', fontSize: '13px', fontWeight: 600 }}>
+                                {modelLoading ? '...' : (modelStatus?.ready ? 'Listo' : 'No disponible')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="admin-card">
+                    <div className="admin-card-header">
+                        <h2 className="admin-card-title">Resumen IA</h2>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div className="admin-metric-card" style={{ padding: '12px', background: 'rgba(15, 23, 42, 0.4)' }}>
+                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Clase objetivo</div>
+                            <div style={{ fontWeight: 600 }}>{modelStatus?.classAttribute || '—'}</div>
+                        </div>
+                        <div className="admin-metric-card" style={{ padding: '12px', background: 'rgba(15, 23, 42, 0.4)' }}>
+                            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Atributos</div>
+                            <div style={{ fontWeight: 600 }}>{modelStatus?.numAttributes || '—'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="admin-card" style={{ marginTop: '24px' }}>
+                <div className="admin-card-header">
+                    <h2 className="admin-card-title">Últimos usuarios registrados</h2>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Roles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {latestUsers.map(u => (
+                                <tr key={u._id}>
+                                    <td>
+                                        <div style={{ fontWeight: 600 }}>{u.nombre || u.username}</div>
+                                        <div style={{ fontSize: '12px', color: '#94a3b8' }}>@{u.username}</div>
+                                    </td>
+                                    <td>{u.email}</td>
+                                    <td>{u.roles?.join(', ')}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };

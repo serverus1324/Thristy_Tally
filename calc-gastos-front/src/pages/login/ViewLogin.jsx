@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { postData } from "../../api/api";
+import { useAuth } from "../../context/AuthContext";
 import "./login.css";
 
 const ViewLogin = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,19 +27,18 @@ const ViewLogin = () => {
       if (!response.token || !/^[a-f\d]{24}$/i.test(String(idPerfil ?? ""))) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("idPerfil");
+        localStorage.removeItem("thrifty_user");
         toast.error("Esta cuenta no tiene un perfil válido asociado en la base de datos.");
         return;
       }
 
-      localStorage.setItem('authToken', response.token);
+      // Guarda token, idPerfil, username, nombre y roles reales en un solo lugar.
+      const userData = login({ ...response, idPerfil });
 
-        try {
-          localStorage.setItem('idPerfil', String(idPerfil));
-        } catch {}
-
-        toast.success("Inicio de sesión exitoso");
-        setTimeout(() => {
-          navigate("/home", { state: { idPerfil } });
+      const esAdmin = Array.isArray(userData.roles) && userData.roles.includes("ROLE_ADMIN");
+      toast.success("Inicio de sesión exitoso");
+      setTimeout(() => {
+        navigate(esAdmin ? "/admin/dashboard" : "/home", { state: { idPerfil }, replace: true });
       }, 800);
     } catch (error) {
       console.error("Error al iniciar sesión:", error);

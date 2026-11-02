@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface NecesidadRepository extends MongoRepository<Necesidad, ObjectId> {
     List<Necesidad> findByIdPresupuesto(ObjectId idPresupuesto);
+    List<Necesidad> findByIdPerfil(ObjectId idPerfil);
     List<Necesidad> findByIdPerfilAndIdPeriodo(ObjectId idPerfil, ObjectId idPeriodo);
 }

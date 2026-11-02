@@ -14,8 +14,13 @@ import CompararPresupuestos from './pages/comparar/CompararPresupuestos';
 import Prediction from './pages/Prediction/Prediction';
 import ForgotPassword from './pages/recover-password/ForgotPassword';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminReports from './pages/admin/AdminReports';
+import AdminConfig from './pages/admin/AdminConfig';
+import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
+import { Toaster } from 'react-hot-toast';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
@@ -23,29 +28,42 @@ function App() {
         <>
             <div className="App">
                 <Routes>
+                    {/* ---------- Públicas ---------- */}
                     <Route path="/" element={<ViewInicio />} />
                     <Route path="/login" element={<ViewLogin />} />
                     <Route path="/signup" element={<ViewSignup />} />
                     <Route path="/recover-password" element={<ForgotPassword />} />
-                    <Route path="/home" element={<ViewHome />} />
-                    <Route path="/dashboard" element={<ViewDashboard />} />
-                    <Route path="/necesidad-presupuesto" element={<ViewNecesidadPresupuesto />} /> 
-                    <Route path="/presupuesto/:id/editar" element={<EditarPresupuesto />} />
-                    <Route path="/crear-gasto" element={<ViewNecesidadPresupuesto />} />
-                    <Route path="/editar-datos" element={<ViewEditarDatos />} />
-                    <Route path="/comparar-presupuestos" element={<CompararPresupuestos />} />
-                    <Route path="/prediccion-necesidades" element={<Prediction />} />
-                    <Route path="/prediction" element={<Prediction />} />
-                    <Route 
-                        path="/admin" 
+                    
+                    {/* ---------- Rutas de ESTUDIANTE ---------- */}
+                    <Route path="/home" element={<ProtectedRoute><ViewHome /></ProtectedRoute>} />
+                    <Route path="/dashboard" element={<ProtectedRoute><ViewDashboard /></ProtectedRoute>} />
+                    <Route path="/necesidad-presupuesto" element={<ProtectedRoute><ViewNecesidadPresupuesto /></ProtectedRoute>} />
+                    <Route path="/presupuesto/:id/editar" element={<ProtectedRoute><EditarPresupuesto /></ProtectedRoute>} />
+                    <Route path="/crear-gasto" element={<ProtectedRoute><ViewNecesidadPresupuesto /></ProtectedRoute>} />
+                    <Route path="/editar-datos" element={<ProtectedRoute><ViewEditarDatos /></ProtectedRoute>} />
+                    <Route path="/comparar-presupuestos" element={<ProtectedRoute><CompararPresupuestos /></ProtectedRoute>} />
+                    <Route path="/prediccion-necesidades" element={<ProtectedRoute><Prediction /></ProtectedRoute>} />
+                    <Route path="/prediction" element={<ProtectedRoute><Prediction /></ProtectedRoute>} />
+
+                    {/* ---------- Solo ADMIN ---------- */}
+                    <Route
+                        path="/admin"
                         element={
                             <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
-                                <AdminDashboard />
+                                <AdminLayout />
                             </ProtectedRoute>
-                        } 
-                    />
+                        }
+                    >
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="dashboard" element={<AdminDashboard />} />
+                        <Route path="usuarios" element={<AdminUsers />} />
+                        <Route path="reportes" element={<AdminReports />} />
+                        <Route path="perfil" element={<AdminConfig />} />
+                        <Route path="configuracion" element={<AdminConfig />} />
+                    </Route>
                 </Routes>
             </div>
+            <Toaster position="top-center" reverseOrder={false} />
             <ToastContainer position="top-right" autoClose={3000} newestOnTop closeOnClick pauseOnFocusLoss={false} />
         </>
     );

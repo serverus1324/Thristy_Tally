@@ -10,6 +10,7 @@ public interface UsuarioRepository extends MongoRepository<Usuario, ObjectId> {
     Optional<Usuario> findByUsername(String username);
     boolean existsByUsername(String username);
     Optional<Usuario> findByEmail(String email);
+    boolean existsByEmail(String email);
     Optional<Usuario> findByCodigoVerificacion(String codigo);
     Optional<Usuario> findByIdPerfil(ObjectId idPerfil);
 }

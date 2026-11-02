@@ -8,6 +8,7 @@ import com.example.CalcGastosU.entity.Presupuesto;
 import com.example.CalcGastosU.repository.NecesidadRepository;
 import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.repository.PresupuestoRepository;
+import com.example.CalcGastosU.security.SecurityUtils;
 import com.example.CalcGastosU.service.PerfilService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,19 +35,30 @@ public class PresupuestoService {
     NecesidadRepository necesidadRepository;
 
     public List<Presupuesto> getAll() {
-        return presupuestoRepository.findAll();
+        if (SecurityUtils.isAdmin()) {
+            return presupuestoRepository.findAll();
+        }
+        return SecurityUtils.getAuthenticatedIdPerfil()
+                .map(presupuestoRepository::findByIdPerfil)
+                .orElseGet(List::of);
     }
 
     public Optional<Presupuesto> getById(ObjectId id) {
-        return presupuestoRepository.findById(id);
+        return presupuestoRepository.findById(id)
+                .map(presupuesto -> {
+                    SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
+                    return presupuesto;
+                });
     }
 
     public Optional<Presupuesto> findByIdPerfilAndIdPeriodo(ObjectId idPerfil, ObjectId idPeriodo) {
+        SecurityUtils.esMismoIdPerfilOAdmin(idPerfil);
         return presupuestoRepository.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo);
     }
 
     public Presupuesto save(PresupuestoDTO dto) {
-        Perfil perfil = perfilService.getOrCreateForId(dto.getIdPerfil());
+        ObjectId idPerfilPropietario = resolverIdPerfilPropietario(dto.getIdPerfil());
+        Perfil perfil = perfilService.getOrCreateForId(idPerfilPropietario);
 
         Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                 .orElseThrow(() -> new RuntimeException("Periodo no encontrado"));
@@ -64,7 +76,9 @@ public class PresupuestoService {
         Presupuesto presupuesto = presupuestoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
-        Perfil perfil = perfilService.getOrCreateForId(dto.getIdPerfil());
+        SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
+
+        Perfil perfil = perfilService.getOrCreateForId(resolverIdPerfilPropietario(dto.getIdPerfil()));
 
         Periodo periodo = periodoRepository.findById(dto.getIdPeriodo())
                 .orElseThrow(() -> new RuntimeException("Periodo no encontrado"));
@@ -81,6 +95,8 @@ public class PresupuestoService {
         Presupuesto presupuesto = presupuestoRepository.findById(idPresupuesto)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
+        SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
+
         List<Necesidad> necesidades = necesidadRepository.findByIdPresupuesto(idPresupuesto);
 
         double totalNecesidades = necesidades.stream()
@@ -94,12 +110,17 @@ public class PresupuestoService {
         Presupuesto presupuesto = presupuestoRepository.findById(idPresupuesto)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
+        SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
+
         presupuesto.setMonto(montoNuevo);
         presupuestoRepository.save(presupuesto);
         return presupuesto;
     }
 
     public void delete(ObjectId id) {
+        Presupuesto presupuesto = presupuestoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
+        SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
         presupuestoRepository.deleteById(id);
     }
 
@@ -107,6 +128,8 @@ public class PresupuestoService {
     public Presupuesto updateConfiguracion(ObjectId id, PresupuestoConfiguracionUpdateDTO dto) {
         Presupuesto presupuesto = presupuestoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado con ID: " + id));
+
+        SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
 
         if (dto.getFrecuenciaCalculo() != null && !dto.getFrecuenciaCalculo().trim().isEmpty()) {
             presupuesto.setFrecuenciaCalculo(dto.getFrecuenciaCalculo());
@@ -117,6 +140,18 @@ public class PresupuestoService {
         }
 
         return presupuestoRepository.save(presupuesto);
+    }
+
+    /**
+     * Un ADMIN puede indicar el idPerfil destino; un usuario normal solo puede
+     * crear recursos en su propio perfil (se ignora lo que envíe el cliente).
+     */
+    private ObjectId resolverIdPerfilPropietario(ObjectId idPerfilSolicitado) {
+        if (SecurityUtils.isAdmin()) {
+            return idPerfilSolicitado;
+        }
+        return SecurityUtils.getAuthenticatedIdPerfil()
+                .orElseThrow(() -> new SecurityException("Sesión sin perfil asociado"));
     }
 
 }

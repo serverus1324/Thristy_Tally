@@ -6,7 +6,21 @@ const getAuthHeaders = (headers = {}) => {
     return token ? { ...headers, Authorization: `Bearer ${token}` } : headers;
 };
 
+// Sesión expirada/inválida: limpia el storage y devuelve al login.
+const manejarSesion = (response) => {
+    if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('idPerfil');
+        localStorage.removeItem('thrifty_user');
+        if (!window.location.pathname.startsWith('/login')) {
+            window.location.assign('/login');
+        }
+    }
+    return response;
+};
+
     const handleResponse = async (response) => {
+        manejarSesion(response);
         if (!response.ok) {
             const errorData = await response.json();
             let errorMessage = 'Error desconocido';
@@ -32,6 +46,7 @@ const getAuthHeaders = (headers = {}) => {
                 }),
                 mode: 'cors'
             });
+            manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error en la petición GET a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);
@@ -60,6 +75,7 @@ const getAuthHeaders = (headers = {}) => {
                 }),
                 body: JSON.stringify(body),
             });
+            manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error en la petición POST a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);
@@ -83,6 +99,7 @@ const getAuthHeaders = (headers = {}) => {
                 }),
                 body: JSON.stringify(body),
             });
+            manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error en la petición PUT a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);
@@ -105,6 +122,7 @@ const getAuthHeaders = (headers = {}) => {
                     'Content-Type': 'application/json',
                 }),
             });
+            manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error en la petición DELETE a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);
@@ -127,6 +145,7 @@ const getAuthHeaders = (headers = {}) => {
                 }),
                 body: JSON.stringify(body),
             });
+            manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error en la petición PATCH a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);

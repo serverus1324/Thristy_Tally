@@ -10,6 +10,46 @@ import "./dashboard.css";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const IconEdit = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+);
+
+const IconPlus = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+);
+
+const IconTrash = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+);
+
+const IconSave = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+);
+
+const IconCancel = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+);
+
+const IconWallet = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>
+);
+
+const IconReceipt = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><line x1="12" y1="18" x2="12" y2="6"></line></svg>
+);
+
+const IconSafe = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+);
+
+const IconChart = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+);
+
+const IconInbox = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" opacity="0.3"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+);
+
 const SimpleGastosTable = ({
   gastos,
   accionActual,
@@ -34,7 +74,7 @@ const SimpleGastosTable = ({
   if (!filteredGastos || filteredGastos.length === 0) {
     return (
       <div className="tt-empty-state">
-        <div className="tt-empty-icon">📭</div>
+        <div className="tt-empty-icon"><IconInbox /></div>
         <h3>No hay necesidades encontradas</h3>
         <p>
           {searchTerm 
@@ -109,11 +149,11 @@ const SimpleGastosTable = ({
                     <td>{estado}</td>
                     <td className="text-center">
                       <div className="d-flex gap-2 justify-content-center">
-                        <button className="btn btn-sm btn-success" onClick={onApplyEdit}>
-                          Guardar
+                        <button className="btn btn-sm btn-success d-flex align-items-center gap-1" onClick={onApplyEdit}>
+                          <IconSave /> Guardar
                         </button>
-                        <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>
-                          Cancelar
+                        <button className="btn btn-sm btn-secondary d-flex align-items-center gap-1" onClick={onCancelAction}>
+                          <IconCancel /> Cancelar
                         </button>
                       </div>
                     </td>
@@ -127,11 +167,11 @@ const SimpleGastosTable = ({
                     <td className="text-center">
                       {isDeleting ? (
                         <div className="d-flex gap-2 justify-content-center">
-                          <button className="btn btn-sm btn-danger" onClick={onConfirmDelete}>
-                            Confirmar
+                          <button className="btn btn-sm btn-danger d-flex align-items-center gap-1" onClick={onConfirmDelete}>
+                            <IconTrash /> Confirmar
                           </button>
-                          <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>
-                            Cancelar
+                          <button className="btn btn-sm btn-secondary d-flex align-items-center gap-1" onClick={onCancelAction}>
+                            <IconCancel /> Cancelar
                           </button>
                         </div>
                       ) : isIncreasing ? (
@@ -146,35 +186,35 @@ const SimpleGastosTable = ({
                             style={{ maxWidth: '120px' }}
                             placeholder="+ monto"
                           />
-                          <button className="btn btn-sm btn-warning" onClick={onApplyIncrease}>
-                            Aplicar
+                          <button className="btn btn-sm btn-warning d-flex align-items-center gap-1" onClick={onApplyIncrease}>
+                            <IconPlus /> Aplicar
                           </button>
-                          <button className="btn btn-sm btn-secondary" onClick={onCancelAction}>
-                            Cancelar
+                          <button className="btn btn-sm btn-secondary d-flex align-items-center gap-1" onClick={onCancelAction}>
+                            <IconCancel /> Cancelar
                           </button>
                         </div>
                       ) : (
                         <div className="d-flex gap-2 justify-content-center">
                           <button
-                            className="btn btn-sm btn-info"
+                            className="btn btn-sm btn-info d-flex align-items-center gap-1"
                             onClick={() => onStartEditar(gasto)}
                             title="Editar"
                           >
-                            ✏️ Editar
+                            <IconEdit /> Editar
                           </button>
                           <button
-                            className="btn btn-sm btn-warning"
+                            className="btn btn-sm btn-warning d-flex align-items-center gap-1"
                             onClick={() => onStartAumentar(gasto)}
                             title="Aumentar valor"
                           >
-                            ➕ Aumentar
+                            <IconPlus /> Aumentar
                           </button>
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-sm btn-danger d-flex align-items-center gap-1"
                             onClick={() => onStartEliminar(gasto)}
                             title="Eliminar"
                           >
-                            🗑️ Eliminar
+                            <IconTrash /> Eliminar
                           </button>
                         </div>
                       )}
@@ -194,7 +234,7 @@ const ChartPlaceholder = ({ gastos }) => {
   if (!gastos || gastos.length === 0) {
     return (
       <div className="tt-empty-state">
-        <div className="tt-empty-icon">📊</div>
+        <div className="tt-empty-icon"><IconChart /></div>
         <h3>No hay datos suficientes</h3>
         <p>Registre algunas necesidades para ver el gráfico.</p>
       </div>
@@ -808,21 +848,27 @@ const ViewDashboard = () => {
                 </div>
                 <div className="tt-resumen-grid">
                   <div className="tt-resumen-item">
-                    <div className="tt-resumen-icon blue"></div>
+                    <div className="tt-resumen-icon blue">
+                      <IconWallet />
+                    </div>
                     <div className="tt-resumen-info">
                       <span>Total Asignado</span>
                       <strong>${(resumenPresupuesto?.data?.totalAsignado || 0).toFixed(2)}</strong>
                     </div>
                   </div>
                   <div className="tt-resumen-item">
-                    <div className="tt-resumen-icon red"></div>
+                    <div className="tt-resumen-icon red">
+                      <IconReceipt />
+                    </div>
                     <div className="tt-resumen-info">
                       <span>Total Gastado</span>
                       <strong>${(resumenPresupuesto?.data?.totalGastado || 0).toFixed(2)}</strong>
                     </div>
                   </div>
                   <div className="tt-resumen-item">
-                    <div className="tt-resumen-icon green"></div>
+                    <div className="tt-resumen-icon green">
+                      <IconSafe />
+                    </div>
                     <div className="tt-resumen-info">
                       <span>Disponible</span>
                       <strong className={`${resumenPresupuesto?.data?.disponible < 0 ? 'neg' : ''}`}>

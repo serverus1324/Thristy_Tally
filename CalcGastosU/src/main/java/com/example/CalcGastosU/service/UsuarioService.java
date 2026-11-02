@@ -8,7 +8,6 @@ import com.example.CalcGastosU.repository.UsuarioRepository;
 import com.example.CalcGastosU.security.SecurityUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@Cacheable
 @Service
 public class UsuarioService {
 
@@ -79,6 +77,80 @@ public class UsuarioService {
             throw new SecurityException("Solo administradores pueden eliminar usuarios");
         }
         usuarioRepository.deleteById(id);
+    }
+
+    public Usuario actualizarRoles(ObjectId idUsuario, Set<Role> roles) {
+        SecurityUtils.assertAdmin();
+        if (roles == null || roles.isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar al menos un rol");
+        }
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setRoles(roles);
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario actualizarActivo(ObjectId idUsuario, boolean activo) {
+        SecurityUtils.assertAdmin();
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setActivo(activo);
+        return usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Actualiza usuario, correo, nombre y/o contraseña de una cuenta.
+     * Solo lo puede invocar un ADMIN. Los campos nulos o vacíos se ignoran.
+     */
+    public Usuario actualizarDatos(ObjectId idUsuario, String username, String email,
+                                   String nombre, String password) {
+        SecurityUtils.assertAdmin();
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (username != null && !username.isBlank()) {
+            String nuevoUsername = username.trim();
+            if (!nuevoUsername.equalsIgnoreCase(usuario.getUsername())
+                    && usuarioRepository.existsByUsername(nuevoUsername)) {
+                throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+            }
+            usuario.setUsername(nuevoUsername);
+        }
+
+        if (email != null && !email.isBlank()) {
+            String nuevoEmail = email.trim();
+            if (!nuevoEmail.equalsIgnoreCase(usuario.getEmail())
+                    && usuarioRepository.existsByEmail(nuevoEmail)) {
+                throw new IllegalArgumentException("El correo ya está en uso");
+            }
+            usuario.setEmail(nuevoEmail);
+        }
+
+        if (nombre != null && !nombre.isBlank()) {
+            usuario.setNombre(nombre.trim());
+        }
+
+        if (password != null && !password.isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(password));
+        }
+
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        // Mantener coherente el perfil asociado (nombre / correo)
+        if (guardado.getIdPerfil() != null) {
+            perfilRepository.findById(guardado.getIdPerfil()).ifPresent(perfil -> {
+                if (nombre != null && !nombre.isBlank()) {
+                    perfil.setNombre(nombre.trim());
+                }
+                if (email != null && !email.isBlank()) {
+                    perfil.setEmail(email.trim());
+                }
+                perfilRepository.save(perfil);
+            });
+        }
+
+        return guardado;
     }
 
     public Usuario iniciarSesion(String username, String password) {

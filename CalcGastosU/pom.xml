@@ -128,6 +128,13 @@
 			<version>3.8.6</version>
 		</dependency>
 
+		<!-- Soporte de pruebas de seguridad (@WithMockUser en tests de controladores) -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -7,11 +7,14 @@ import com.example.CalcGastosU.entity.Necesidad;
 import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Periodo;
 import com.example.CalcGastosU.entity.Presupuesto;
+import com.example.CalcGastosU.entity.Usuario;
+import com.example.CalcGastosU.enums.Role;
 import com.example.CalcGastosU.service.PerfilService;
 import com.example.CalcGastosU.repository.NecesidadRepository;
 import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.repository.PresupuestoRepository;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,10 +23,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -113,6 +120,29 @@ class NecesidadServiceTest {
         necesidadDTO.setIdPerfil(idPerfil);
         necesidadDTO.setIdPeriodo(idPeriodo);
         necesidadDTO.setIdPresupuesto(idPresupuesto);
+
+        // Las operaciones del servicio ahora validan propiedad/rol vía SecurityUtils.
+        // Se autentica un ADMIN para que las pruebas de lógica no se vean bloqueadas.
+        autenticarComoAdmin(idPerfil);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    private void autenticarComoAdmin(ObjectId idPerfilAutenticado) {
+        Usuario admin = new Usuario();
+        admin.setId(new ObjectId());
+        admin.setIdPerfil(idPerfilAutenticado);
+        admin.setRoles(Set.of(Role.ROLE_ADMIN));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        admin,
+                        null,
+                        List.of(new SimpleGrantedAuthority(Role.ROLE_ADMIN.name()))
+                )
+        );
     }
 
     // ============================================================
@@ -430,6 +460,8 @@ class NecesidadServiceTest {
         @DisplayName("Debería eliminar una necesidad correctamente")
         void testDeleteExitoso() {
             // Arrange
+            when(necesidadRepository.findById(idNecesidad))
+                .thenReturn(Optional.of(necesidad1));
             doNothing().when(necesidadRepository).deleteById(idNecesidad);
 
             // Act

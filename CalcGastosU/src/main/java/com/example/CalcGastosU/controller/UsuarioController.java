@@ -3,18 +3,22 @@ package com.example.CalcGastosU.controller;
 import com.example.CalcGastosU.dto.LoginRequestDTO;
 import com.example.CalcGastosU.entity.Perfil;
 import com.example.CalcGastosU.entity.Usuario;
+import com.example.CalcGastosU.enums.Role;
 import com.example.CalcGastosU.security.JwtService;
 import com.example.CalcGastosU.service.UsuarioService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -132,6 +136,111 @@ public class UsuarioController {
         }
     }
 
+    @PatchMapping("/{idUsuario}/rol")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> actualizarRoles(
+            @PathVariable("idUsuario") ObjectId idUsuario,
+            @RequestBody Map<String, List<String>> body) {
+        List<String> rolesRaw = body == null ? null : body.get("roles");
+        if (rolesRaw == null || rolesRaw.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "mensaje", "Debe indicar al menos un rol"));
+        }
+        try {
+            Set<Role> roles = new HashSet<>();
+            for (String r : rolesRaw) {
+                String normalizado = r != null && r.startsWith("ROLE_") ? r : "ROLE_" + r;
+                roles.add(Role.valueOf(normalizado));
+            }
+            Usuario actualizado = usuarioService.actualizarRoles(idUsuario, roles);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("roles", actualizado.getRoles().stream().map(Enum::name).toList());
+            response.put("mensaje", "Roles actualizados exitosamente");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("mensaje", "Rol inválido. Valores permitidos: ROLE_USER, ROLE_ADMIN");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("mensaje", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+    @PatchMapping("/{idUsuario}/activo")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> actualizarActivo(
+            @PathVariable("idUsuario") ObjectId idUsuario,
+            @RequestBody Map<String, Boolean> body) {
+        Boolean activo = body == null ? null : body.get("activo");
+        if (activo == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "mensaje", "Debe indicar el campo 'activo'"));
+        }
+        try {
+            Usuario actualizado = usuarioService.actualizarActivo(idUsuario, activo);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("activo", actualizado.getActivo());
+            response.put("mensaje", "Estado del usuario actualizado exitosamente");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("mensaje", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+    @PatchMapping("/{idUsuario}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> actualizarDatos(
+            @PathVariable("idUsuario") ObjectId idUsuario,
+            @RequestBody Map<String, String> body) {
+        String username = body == null ? null : body.get("username");
+        String email = body == null ? null : body.get("email");
+        String nombre = body == null ? null : body.get("nombre");
+        String password = body == null ? null : body.get("password");
+
+        if ((username == null || username.isBlank())
+                && (email == null || email.isBlank())
+                && (nombre == null || nombre.isBlank())
+                && (password == null || password.isBlank())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "mensaje", "Debe indicar al menos un campo a actualizar"));
+        }
+
+        try {
+            Usuario actualizado = usuarioService.actualizarDatos(idUsuario, username, email, nombre, password);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", Map.of(
+                    "_id", actualizado.getId() != null ? actualizado.getId().toString() : "",
+                    "username", actualizado.getUsername() != null ? actualizado.getUsername() : "",
+                    "email", actualizado.getEmail() != null ? actualizado.getEmail() : "",
+                    "nombre", actualizado.getNombre() != null ? actualizado.getNombre() : ""));
+            response.put("mensaje", "Datos del usuario actualizados exitosamente");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("mensaje", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("mensaje", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> iniciarSesion(@RequestBody LoginRequestDTO request) {
         try {
@@ -146,6 +255,9 @@ public class UsuarioController {
             response.put("username", usuario.getUsername());
             response.put("email", usuario.getEmail());
             response.put("nombre", usuario.getNombre());
+            response.put("roles", usuario.getRoles() != null
+                    ? usuario.getRoles().stream().map(Enum::name).toList()
+                    : List.of());
             response.put("mensaje", "Inicio de sesión EXITOSO");
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

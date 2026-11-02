@@ -1,33 +1,45 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-// Simulated auth hook - in a real app, this would get user data from context or state
-const useAuth = () => {
-    // For demo purposes, let's simulate a user with roles from localStorage or default
-    const user = JSON.parse(localStorage.getItem("thrifty_user") || "null");
-    
-    // If no user in storage, return default user with USER role for testing
-    return {
-        user: user || {
-            roles: ["ROLE_USER"] // Default role
-        },
-        isAuthenticated: !!user || true // For demo, let's allow access
-    };
-};
-
+/**
+ * Protege rutas según autenticación y (opcionalmente) roles reales.
+ * - Sin sesión válida -> redirige a /login conservando el origen.
+ * - Con sesión pero sin el rol requerido -> redirige a /home.
+ */
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const { user } = useAuth();
-    
-    // Check if user has any of the allowed roles
-    const hasPermission = allowedRoles.some(role => user.roles.includes(role));
-    
-    if (!hasPermission) {
-        // Redirect to home if user doesn't have required roles
-        return <Navigate to="/home" replace />;
+  const { user, isAuthenticated, isAdmin } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // Si no se especifican roles, solo pedimos estar autenticado.
+  // Pero si el usuario es ADMIN, lo mandamos a su panel si intenta entrar a una ruta de usuario.
+  if (!allowedRoles || allowedRoles.length === 0) {
+    // Si la ruta NO empieza por /admin y el usuario es ADMIN, redirigir
+    if (isAdmin && !location.pathname.startsWith("/admin")) {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    return children;
+  }
+
+  const roles = user?.roles ?? [];
+  const autorizado = allowedRoles.some((role) => roles.includes(role));
+
+  if (!autorizado) {
+    // Si un admin intenta entrar a ruta de usuario
+    if (isAdmin) {
+      return <Navigate to="/admin/dashboard" replace />;
     }
     
-    // If user has permission, render the children
-    return children;
+    // Si un usuario normal intenta entrar a una ruta para la que no tiene permiso
+    // (Ej: intentar entrar a /admin)
+    return <Navigate to="/home" replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

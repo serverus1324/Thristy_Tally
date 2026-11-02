@@ -6,6 +6,8 @@ import com.example.CalcGastosU.controller.NecesidadController;
 import com.example.CalcGastosU.dto.NecesidadDTO;
 import com.example.CalcGastosU.dto.ResumenPresupuestoDTO;
 import com.example.CalcGastosU.entity.Necesidad;
+import com.example.CalcGastosU.repository.UsuarioRepository;
+import com.example.CalcGastosU.security.JwtService;
 import com.example.CalcGastosU.service.NecesidadService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.types.ObjectId;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = NecesidadController.class)
 @ContextConfiguration(classes = CalcGastosUApplication.class)
 @Import(SecurityConfig.class)
+@WithMockUser
 @DisplayName("Pruebas del Controlador de Necesidades")
 class NecesidadControllerTest {
 
@@ -41,6 +45,13 @@ class NecesidadControllerTest {
 
     @MockBean
     private NecesidadService necesidadService;
+
+    // Dependencias requeridas por SecurityConfig/JwtAuthFilter al cargar el contexto
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private ObjectMapper objectMapper;

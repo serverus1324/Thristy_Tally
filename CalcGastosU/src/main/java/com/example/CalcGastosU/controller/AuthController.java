@@ -8,7 +8,6 @@ import com.example.CalcGastosU.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +25,9 @@ public class AuthController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private final Random random = new Random();
 
     @PostMapping("/forgot-password")
@@ -47,8 +48,6 @@ public class AuthController {
             usuario.setCodigoVerificacion(codigo);
             usuario.setFechaExpiracionCodigo(fechaExpiracion);
             usuarioRepository.save(usuario);
-
-            System.out.println("Código enviado a " + request.getEmail() + ": " + codigo);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

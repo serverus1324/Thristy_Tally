@@ -26,12 +26,12 @@ if ($exit -eq 0) {
     $JAR = Join-Path $PROJECT_DIR "target\CalcGastosU-0.0.1-SNAPSHOT.jar"
     if (Test-Path $JAR) {
         $size = [math]::Round((Get-Item $JAR).Length / 1MB, 1)
-        Write-Host "✅ BUILD SUCCESS  →  $JAR  ($size MB)" -ForegroundColor Green
+        Write-Host "BUILD SUCCESS  ->  $JAR  ($size MB)" -ForegroundColor Green
         Write-Host "Ahora ejecuta:  .\run-backend.ps1" -ForegroundColor Cyan
     } else {
-        Write-Host "⚠️  Build OK pero no se encontro el JAR en target\" -ForegroundColor Yellow
+        Write-Host "Build OK pero no se encontro el JAR en target\" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "❌ BUILD FAILED — exit code $exit" -ForegroundColor Red
+    Write-Host "BUILD FAILED - exit code $exit" -ForegroundColor Red
     exit $exit
 }

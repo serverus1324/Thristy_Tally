@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getData } from "../../api/api";
 import Navbar from "../../components/navbar/Navbar";
 import ChatBot from "../../components/chatbot/ChatBot";
+import { useAuth } from "../../context/AuthContext";
 import "./home.css";
 
 const ViewHome = () => {
@@ -21,12 +22,21 @@ const ViewHome = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Si no hay idPerfil, es un error de sesión para el estudiante
+    if (!idPerfil) {
+      setError("No se encontró el perfil. Por favor, inicia sesión nuevamente.");
+      setLoading(false);
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const data = await getData(`estudiantes/${idPerfil}`);
         setUserData(data);
+        setError(null);
       } catch (err) {
-        setError(err.message || "No se pudieron cargar los datos del perfil.");
+        console.error("Error fetching user data:", err);
+        setError("Estudiante no encontrado o error de red.");
       } finally {
         setLoading(false);
       }
@@ -35,10 +45,10 @@ const ViewHome = () => {
     if (/^[a-f\d]{24}$/i.test(String(idPerfil ?? ""))) {
       fetchUserData();
     } else {
-      setError("Esta cuenta no tiene un perfil válido asociado. Inicia sesión con una cuenta registrada.");
+      setError("Perfil no válido.");
       setLoading(false);
     }
-  }, [idPerfil]);
+  }, [idPerfil, navigate]);
 
   if (loading) {
     return (

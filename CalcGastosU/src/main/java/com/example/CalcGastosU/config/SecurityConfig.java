@@ -99,17 +99,22 @@ public class SecurityConfig {
                         // Recuperación de contraseña
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         
-                                                // ---------- RAG (público para el taller) ----------
+                                                // ---------- RAG (chat público para el taller) ----------
                         .requestMatchers(HttpMethod.POST, "/api/chat", "/api/chat/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/salud", "/api/salud/").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/consultas", "/api/consultas/").permitAll()
+                        // El historial de consultas expone datos de todos: ya NO es público,
+                        // cae en anyRequest().authenticated()
 
                         // ---------- Predicción WEKA (públicas durante signup/post-sin-auth) ----------
                         .requestMatchers(HttpMethod.GET, "/api/prediccion/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/prediccion/**").permitAll()
 
                         // ---------- SOLO ADMIN ----------
+                        // Alta directa de usuarios: el cuerpo incluye "roles", por lo que
+                        // NO puede quedar en authenticated() (evita auto-escalada de privilegios).
+                        .requestMatchers(HttpMethod.POST, "/api/v1/usuarios", "/api/v1/usuarios/").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/usuarios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/usuarios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/perfiles").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/perfiles/**").hasRole("ADMIN")

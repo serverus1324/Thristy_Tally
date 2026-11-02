@@ -2,7 +2,6 @@ package com.example.CalcGastosU.controller;
 
 import com.example.CalcGastosU.dto.PeriodoDTO;
 import com.example.CalcGastosU.entity.Periodo;
-import com.example.CalcGastosU.repository.PeriodoRepository;
 import com.example.CalcGastosU.service.PeriodoService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +21,6 @@ public class PeriodoController {
 
     @Autowired
     private PeriodoService periodoService;
-
-    @Autowired
-    private PeriodoRepository periodoRepo;
 
     @GetMapping
     public ResponseEntity<?> getAll() {
@@ -116,7 +112,7 @@ public class PeriodoController {
         }
 
         ObjectId oid = new ObjectId(idPerfil);
-        List<Periodo> periodos = periodoRepo.findByIdPerfil(oid);
+        List<Periodo> periodos = periodoService.findByIdPerfil(oid);
 
         return ResponseEntity.ok(periodos);
     }

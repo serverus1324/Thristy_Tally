@@ -11,7 +11,6 @@ import com.example.CalcGastosU.repository.UsuarioRepository;
 import com.example.CalcGastosU.security.SecurityUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@Cacheable
 @Service
 public class PerfilService {
 
