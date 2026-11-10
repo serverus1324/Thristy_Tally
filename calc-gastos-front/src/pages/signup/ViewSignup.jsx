@@ -38,7 +38,7 @@ const ViewSignup = () => {
     const body = { nombre: name, email, telefono: phone, username, password, tipoUsuario };
 
     try {
-      await postData("estudiantes/", body);
+      await postData("estudiantes", body);
       toast.success("Usuario creado exitosamente");
       setTimeout(() => {
         navigate("/login", { state: { username } });
