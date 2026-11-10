@@ -50,6 +50,13 @@ public class EstudianteService {
         if (usuarioRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso");
         }
+        String email = dto.getEmail();
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio");
+        }
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("El correo electrónico ya está registrado");
+        }
         String rawPassword = dto.getPassword();
         if (rawPassword == null || rawPassword.isBlank()) {
             throw new IllegalArgumentException("La contraseña es obligatoria");

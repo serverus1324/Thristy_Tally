@@ -49,7 +49,12 @@ const manejarSesion = (response) => {
             manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`Error en la petición GET a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);
+                let mensaje = `Error: ${response.status} - ${response.statusText}`;
+                try {
+                    const parsed = JSON.parse(errorText);
+                    if (parsed?.mensaje) mensaje = parsed.mensaje;
+                } catch { /* respuesta sin JSON */ }
+                throw new Error(mensaje);
             }
             const data = await response.json();
             return data;
@@ -78,7 +83,12 @@ const manejarSesion = (response) => {
             manejarSesion(response);
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`Error en la petición POST a ${route}: ${response.status} - ${response.statusText} - ${errorText}`);
+                let mensaje = `Error: ${response.status} - ${response.statusText}`;
+                try {
+                    const parsed = JSON.parse(errorText);
+                    if (parsed?.mensaje) mensaje = parsed.mensaje;
+                } catch { /* respuesta sin JSON */ }
+                throw new Error(mensaje);
             }
             const data = await response.json();
             return data;
