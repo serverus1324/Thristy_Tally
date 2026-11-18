@@ -308,6 +308,19 @@
   backdrop-filter: blur(8px);
 }
 
+.admin-powerbi-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-powerbi-card p {
+  margin: 8px 0 0;
+  color: #94a3b8;
+}
+
 .admin-card-header {
   display: flex;
   justify-content: space-between;
@@ -570,6 +583,11 @@
   /* La tabla mantiene su ancho y se puede desplazar en horizontal */
   .admin-card {
     overflow-x: auto;
+  }
+
+  .admin-powerbi-card {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

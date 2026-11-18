@@ -114,6 +114,19 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
+            <section className="admin-card admin-powerbi-card">
+                <div>
+                    <h2 className="admin-card-title">Dashboard Thrifty Tally</h2>
+                    <p>Consulta el informe de Power BI de Thrifty Tally.</p>
+                </div>
+                <a
+                    className="admin-btn admin-btn-primary"
+                    href="https://app.powerbi.com/groups/me/reports/56f8b613-1022-4c84-aa47-00e5367d9220/e91056043b7265e72e80?experience=power-bi"
+                >
+                    Abrir dashboard
+                </a>
+            </section>
+
             <div className="admin-stats-grid">
                 <div className="admin-stat-card">
                     <div className="admin-stat-header">
