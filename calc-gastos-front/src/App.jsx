@@ -12,6 +12,7 @@ import EditarPresupuesto from './pages/presupuesto/EditarPresupuesto';
 import ViewEditarDatos from './pages/usuario/ViewEditarDatos';
 import CompararPresupuestos from './pages/comparar/CompararPresupuestos';
 import Prediction from './pages/Prediction/Prediction';
+import OptimizacionPresupuesto from './pages/optimizacion/OptimizacionPresupuesto';
 import ForgotPassword from './pages/recover-password/ForgotPassword';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -44,6 +45,7 @@ function App() {
                     <Route path="/comparar-presupuestos" element={<ProtectedRoute><CompararPresupuestos /></ProtectedRoute>} />
                     <Route path="/prediccion-necesidades" element={<ProtectedRoute><Prediction /></ProtectedRoute>} />
                     <Route path="/prediction" element={<ProtectedRoute><Prediction /></ProtectedRoute>} />
+                    <Route path="/optimizacion-presupuesto" element={<ProtectedRoute><OptimizacionPresupuesto /></ProtectedRoute>} />
 
                     {/* ---------- Solo ADMIN ---------- */}
                     <Route

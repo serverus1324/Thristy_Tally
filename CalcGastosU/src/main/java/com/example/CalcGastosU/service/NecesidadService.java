@@ -66,8 +66,9 @@ public class NecesidadService {
 
             Necesidad necesidadEntity = new Necesidad();
             necesidadEntity.setDescripcion(dto.getDescripcion());
+            necesidadEntity.setTipo(dto.getTipo());
             necesidadEntity.setMonto(dto.getMonto() != null ? dto.getMonto() : 0.0);
-            necesidadEntity.setEsPredeterminada(dto.getEsPredeterminada() != null ? dto.getEsPredeterminada() : 0);
+            necesidadEntity.setEsPredeterminada(dto.getEsPredeterminada());
 
             necesidadEntity.setIdPerfil(perfil.getId());
             necesidadEntity.setIdPeriodo(periodo.getId());
@@ -125,6 +126,9 @@ public class NecesidadService {
         if (dto.getDescripcion() != null) {
             necesidad.setDescripcion(dto.getDescripcion());
         }
+        if (dto.getTipo() != null) {
+            necesidad.setTipo(dto.getTipo());
+        }
         if (dto.getMonto() != null) {
             necesidad.setMonto(dto.getMonto());
         }
@@ -156,6 +160,7 @@ public class NecesidadService {
 
         Necesidad necesidad = new Necesidad();
         necesidad.setDescripcion(dto.getDescripcion());
+        necesidad.setTipo(dto.getTipo());
         necesidad.setMonto(dto.getMonto());
         necesidad.setEsPredeterminada(dto.getEsPredeterminada());
         necesidad.setIdPerfil(perfil.getId());
@@ -193,7 +198,7 @@ public class NecesidadService {
                 .findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo)
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
 
-        List<Necesidad> necesidades = necesidadRepository.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo);
+        List<Necesidad> necesidades = necesidadRepository.findByIdPresupuesto(presupuesto.getId());
 
         double totalGastado = necesidades.stream()
                 .mapToDouble(n -> n.getMonto() != null ? n.getMonto() : 0.0)

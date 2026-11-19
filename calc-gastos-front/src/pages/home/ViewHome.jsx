@@ -138,6 +138,18 @@ const ViewHome = () => {
     }
   };
 
+  const toOptimization = () => {
+    const idE = getIdE();
+    if (idE) {
+      try { localStorage.setItem("idPerfil", String(idE)); } catch {}
+      navigate("/optimizacion-presupuesto", {
+        state: { idUsuario: String(idE), idPerfil: String(idE) },
+      });
+    } else {
+      navigate("/optimizacion-presupuesto");
+    }
+  };
+
   const nombre = userData?.data?.nombre ?? "";
   const tipoUsuario = userData?.data?.tipoUsuario ?? "";
   const userForNavbar = userData?.data ?? { nombre: "" };
@@ -263,6 +275,23 @@ const ViewHome = () => {
                 <div className="home2-action-text">
                   <h3>Comparar presupuestos</h3>
                   <p>Evalúa asignado vs gastado y detecta desbalances</p>
+                </div>
+                <div className="home2-action-chevron">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                </div>
+              </button>
+
+              <button className="home2-action-card teal" onClick={toOptimization}>
+                <div className="home2-action-bg"></div>
+                <div className="home2-action-icon-wrap">
+                  <div className="home2-action-icon">🎯</div>
+                </div>
+                <div className="home2-action-text">
+                  <h3>Optimización de presupuesto</h3>
+                  <p>Calcula la distribución mínima y maximiza tu ahorro</p>
                 </div>
                 <div className="home2-action-chevron">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

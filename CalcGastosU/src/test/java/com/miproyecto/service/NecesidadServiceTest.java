@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -250,6 +251,25 @@ class NecesidadServiceTest {
             verify(perfilService, times(1)).getOrCreateForId(idPerfil);
             verify(periodoRepository, times(1)).findById(idPeriodo);
             verify(necesidadRepository, times(1)).save(any(Necesidad.class));
+        }
+
+        @Test
+        @DisplayName("No debe inferir que una necesidad sin tipo es personalizada")
+        void testSavePreservaTipoNoDefinido() {
+            NecesidadDTO dtoSinTipo = new NecesidadDTO();
+            dtoSinTipo.setDescripcion("Necesidad heredada");
+            dtoSinTipo.setMonto(150.0);
+            dtoSinTipo.setIdPerfil(idPerfil);
+            dtoSinTipo.setIdPeriodo(idPeriodo);
+
+            when(perfilService.getOrCreateForId(idPerfil)).thenReturn(perfil);
+            when(periodoRepository.findById(idPeriodo)).thenReturn(Optional.of(periodo));
+
+            necesidadService.save(List.of(dtoSinTipo));
+
+            ArgumentCaptor<Necesidad> savedNeed = ArgumentCaptor.forClass(Necesidad.class);
+            verify(necesidadRepository).save(savedNeed.capture());
+            assertNull(savedNeed.getValue().getEsPredeterminada());
         }
 
         @Test

@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Objects;
 
 @JsonTypeName("necesidad")
-@Document("necesidad")
+@Document("necesidades")
 public class Necesidad {
 
     @Id

@@ -15,6 +15,7 @@ public class NecesidadDTO implements Serializable {
     @JsonDeserialize(using = ObjectIdDeserializer.class)
     private ObjectId id;
     private String descripcion;
+    private String tipo;
     private Double monto;
     private Integer esPredeterminada;
     private Boolean excedePresupuesto = false;
