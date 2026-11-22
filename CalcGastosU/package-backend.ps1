@@ -12,7 +12,7 @@ if (-not (Test-Path $MVNW)) {
 }
 
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "  CalcGastosU  —  Building JAR (skipTests)"                 -ForegroundColor Cyan
+Write-Host "  CalcGastosU  -  Building JAR (skipTests)"                  -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  Working dir    : $PROJECT_DIR"
 Write-Host "  MAVEN_USER_HOME: $env:MAVEN_USER_HOME"

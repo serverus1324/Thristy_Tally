@@ -1,9 +1,11 @@
 package com.example.CalcGastosU.entity;
 
 import com.example.CalcGastosU.enums.Role;
+import com.example.CalcGastosU.serializer.ObjectIdSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -21,6 +23,7 @@ public class Usuario {
 
     @Id
     @BsonProperty("_id")
+    @JsonSerialize(using = ObjectIdSerializer.class)
     private ObjectId id;
 
     @BsonProperty("username")
