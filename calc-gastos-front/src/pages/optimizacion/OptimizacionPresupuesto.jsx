@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js';
 import Navbar from '../../components/navbar/Navbar';
@@ -53,6 +53,8 @@ const OptimizacionPresupuesto = () => {
   const [categorias, setCategorias] = useState([]);
   const [resultado, setResultado] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorCarga, setErrorCarga] = useState('');
+  const cargaActual = useRef(0);
 
   useEffect(() => {
     const cargarPeriodos = async () => {
@@ -73,18 +75,39 @@ const OptimizacionPresupuesto = () => {
   }, [idPerfil]);
 
   const cargarPresupuesto = useCallback(async () => {
+    const requestId = ++cargaActual.current;
     setPresupuesto(null);
+    setCategorias([]);
     setResultado(null);
-    if (!idPerfil || !idPeriodo) return;
+    setErrorCarga('');
+    if (!idPerfil || !idPeriodo) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await getData(
         `presupuestos/por-perfil-periodo?idPerfil=${idPerfil}&idPeriodo=${idPeriodo}`
       );
-      const presupuestoSeleccionado = response?.data || response;
-      setPresupuesto(presupuestoSeleccionado);
+      const presupuestoSeleccionado = response?.data;
+      const idPresupuesto = getId(
+        presupuestoSeleccionado?._id || presupuestoSeleccionado?.id
+      );
+      if (!presupuestoSeleccionado || !idPresupuesto) {
+        throw new Error('La respuesta no contiene el presupuesto del periodo seleccionado.');
+      }
 
-      const preload = await getData(`optimization/preload/${idPeriodo}`);
-      const necesidades = Array.isArray(preload?.categorias) ? preload.categorias : [];
+      const preload = await getData(
+        `optimization/preload/${idPeriodo}?idPresupuesto=${idPresupuesto}`
+      );
+      if (!Array.isArray(preload?.categorias)) {
+        throw new Error('La respuesta de necesidades no tiene el formato esperado.');
+      }
+      if (requestId !== cargaActual.current) return;
+
+      setPresupuesto(presupuestoSeleccionado);
+      const necesidades = preload.categorias;
       setCategorias(necesidades.map((category) => ({
         idNecesidad: category.idNecesidad,
         name: category.name,
@@ -100,7 +123,12 @@ const OptimizacionPresupuesto = () => {
         toast.error(preload.mensaje);
       }
     } catch (error) {
-      if (!String(error.message).includes('404')) toast.error(error.message);
+      if (requestId !== cargaActual.current) return;
+      setCategorias([]);
+      setErrorCarga(error.message || 'No se pudieron cargar las necesidades.');
+      toast.error(error.message || 'No se pudieron cargar las necesidades.');
+    } finally {
+      if (requestId === cargaActual.current) setLoading(false);
     }
   }, [idPerfil, idPeriodo]);
 
@@ -273,7 +301,15 @@ const OptimizacionPresupuesto = () => {
               <select
                 id="periodo"
                 value={idPeriodo}
-                onChange={(event) => setIdPeriodo(event.target.value)}
+                onChange={(event) => {
+                  cargaActual.current += 1;
+                  setIdPeriodo(event.target.value);
+                  setPresupuesto(null);
+                  setCategorias([]);
+                  setResultado(null);
+                  setErrorCarga('');
+                  setLoading(false);
+                }}
               >
                 <option value="">Seleccione un periodo</option>
                 {periodos.map((periodo) => (
@@ -349,10 +385,24 @@ const OptimizacionPresupuesto = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {categorias.length === 0 && (
+                  {loading && (
                     <tr>
                       <td colSpan="5" className="optimizacion-empty">
-                        No hay necesidades registradas para este periodo. Puede agregar necesidades y actualizar esta pantalla.
+                        Cargando presupuesto y necesidades del periodo...
+                      </td>
+                    </tr>
+                  )}
+                  {!loading && errorCarga && (
+                    <tr>
+                      <td colSpan="5" className="optimizacion-empty texto-peligro">
+                        No se pudieron cargar las necesidades: {errorCarga}
+                      </td>
+                    </tr>
+                  )}
+                  {!loading && !errorCarga && categorias.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="optimizacion-empty">
+                        No hay necesidades registradas para este presupuesto y periodo.
                       </td>
                     </tr>
                   )}
@@ -408,7 +458,7 @@ const OptimizacionPresupuesto = () => {
                 type="button"
                 className="optimizacion-submit"
                 onClick={ejecutarOptimizacion}
-                disabled={loading || erroresCategorias.length > 0 ||
+                disabled={loading || Boolean(errorCarga) || erroresCategorias.length > 0 ||
                   totalMinimos > Number(presupuesto?.monto || 0)}
               >
                 {loading ? 'Calculando...' : 'Calcular ahorro máximo'}

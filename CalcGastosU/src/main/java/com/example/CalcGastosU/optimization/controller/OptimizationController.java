@@ -41,14 +41,23 @@ public class OptimizationController {
     }
 
     @GetMapping("/preload/{idPeriodo}")
-    public ResponseEntity<?> preload(@PathVariable String idPeriodo) {
+    public ResponseEntity<?> preload(
+            @PathVariable String idPeriodo,
+            @RequestParam(required = false) String idPresupuesto) {
         try {
             if (!ObjectId.isValid(idPeriodo)) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
                         "mensaje", "Formato de idPeriodo inválido"));
             }
-            return ResponseEntity.ok(optimizationService.preload(new ObjectId(idPeriodo)));
+            if (idPresupuesto != null && !ObjectId.isValid(idPresupuesto)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "mensaje", "Formato de idPresupuesto inválido"));
+            }
+            return ResponseEntity.ok(optimizationService.preload(
+                    new ObjectId(idPeriodo),
+                    idPresupuesto == null ? null : new ObjectId(idPresupuesto)));
         } catch (OptimizationException ex) {
             return ResponseEntity.status(ex.isInsufficientBudget()
                             ? HttpStatus.UNPROCESSABLE_ENTITY

@@ -88,7 +88,7 @@ class OptimizationBsonMappingTest {
         assertEquals(Integer.valueOf(1), necesidades.get(0).getEsPredeterminada());
         assertEquals(Double.valueOf(650_000.0), necesidades.get(7).getMonto());
 
-        when(presupuestoRepository.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo))
+        lenient().when(presupuestoRepository.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo))
                 .thenReturn(java.util.Optional.of(presupuesto));
         lenient().when(presupuestoRepository.findById(presupuesto.getId()))
                 .thenReturn(java.util.Optional.of(presupuesto));
@@ -104,7 +104,8 @@ class OptimizationBsonMappingTest {
 
     @Test
     void bsonDeColeccionRealIncluyeOchoNecesidadesEnPrecalculoYOptimizacion() {
-        OptimizationPreloadResponseDTO preload = service.preload(idPeriodo);
+        OptimizationPreloadResponseDTO preload =
+                service.preload(idPeriodo, presupuesto.getId());
 
         assertEquals(8, preload.getCategorias().size());
         assertEquals(1_840_000.0, preload.getTotalMinimos(), 0.001);
@@ -137,7 +138,7 @@ class OptimizationBsonMappingTest {
 
     @Test
     void unaNuevaNecesidadPersonalizadaGeneraUnaFilaAdicional() {
-        service.preload(idPeriodo);
+        service.preload(idPeriodo, presupuesto.getId());
 
         necesidades.add(readBsonNeed(
                 new Document("_id", new ObjectId())
@@ -150,7 +151,8 @@ class OptimizationBsonMappingTest {
                         .append("idPresupuesto", presupuesto.getId())
                         .append("_class", CLASS_NAME)));
 
-        OptimizationPreloadResponseDTO refreshed = service.preload(idPeriodo);
+        OptimizationPreloadResponseDTO refreshed =
+                service.preload(idPeriodo, presupuesto.getId());
 
         assertEquals(9, refreshed.getCategorias().size());
         assertEquals(1_930_000.0, refreshed.getTotalMinimos(), 0.001);

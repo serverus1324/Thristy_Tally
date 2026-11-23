@@ -49,10 +49,10 @@ public class OptimizationService {
             throw new OptimizationException("El presupuesto debe ser válido y no negativo");
         }
 
-        ObjectId idPerfil = SecurityUtils.getAuthenticatedIdPerfil()
+        SecurityUtils.getAuthenticatedIdPerfil()
                 .orElseThrow(() -> new SecurityException("Sesión sin perfil asociado"));
         ObjectId idPeriodo = new ObjectId(request.getIdPeriodo());
-        List<Necesidad> needs = resolveNeeds(presupuesto, idPerfil, idPeriodo);
+        List<Necesidad> needs = resolveNeeds(presupuesto, idPeriodo);
         if (needs.isEmpty()) {
             throw new OptimizationException("El periodo seleccionado no tiene necesidades para optimizar");
         }
@@ -154,19 +154,36 @@ public class OptimizationService {
     }
 
     public OptimizationPreloadResponseDTO preload(ObjectId idPeriodo) {
-        ObjectId idPerfil = SecurityUtils.getAuthenticatedIdPerfil()
+        return preload(idPeriodo, null);
+    }
+
+    public OptimizationPreloadResponseDTO preload(ObjectId idPeriodo, ObjectId idPresupuesto) {
+        ObjectId authenticatedProfile = SecurityUtils.getAuthenticatedIdPerfil()
                 .orElseThrow(() -> new SecurityException("Sesión sin perfil asociado"));
-        Presupuesto presupuesto = presupuestoRepository.findByIdPerfilAndIdPeriodo(idPerfil, idPeriodo)
-                .orElseThrow(() -> new OptimizationException(
-                        "Presupuesto no encontrado para el periodo seleccionado"));
+        Presupuesto presupuesto;
+        if (idPresupuesto == null) {
+            presupuesto = presupuestoRepository.findByIdPerfilAndIdPeriodo(authenticatedProfile, idPeriodo)
+                    .orElseThrow(() -> new OptimizationException(
+                            "Presupuesto no encontrado para el periodo seleccionado"));
+        } else {
+            presupuesto = presupuestoRepository.findById(idPresupuesto)
+                    .orElseThrow(() -> new OptimizationException("Presupuesto no encontrado"));
+        }
         SecurityUtils.esMismoIdPerfilOAdmin(presupuesto.getIdPerfil());
+        if (!idPeriodo.equals(presupuesto.getIdPeriodo())) {
+            throw new OptimizationException("El presupuesto no corresponde al periodo seleccionado");
+        }
+        if (presupuesto.getIdPerfil() == null
+                || (!SecurityUtils.isAdmin() && !authenticatedProfile.equals(presupuesto.getIdPerfil()))) {
+            throw new SecurityException("Acceso denegado: el presupuesto no pertenece al usuario autenticado");
+        }
 
         BigDecimal available = money(presupuesto.getMonto());
         if (available == null || available.signum() < 0) {
             throw new OptimizationException("El presupuesto debe ser válido y no negativo");
         }
 
-        List<Necesidad> needs = resolveNeeds(presupuesto, idPerfil, idPeriodo);
+        List<Necesidad> needs = resolveNeeds(presupuesto, idPeriodo);
         List<OptimizationPreloadCategoryDTO> categories = new ArrayList<>();
         BigDecimal minimumTotal = BigDecimal.ZERO;
 
@@ -285,10 +302,7 @@ public class OptimizationService {
         return presupuesto;
     }
 
-    private List<Necesidad> resolveNeeds(
-            Presupuesto presupuesto,
-            ObjectId idPerfil,
-            ObjectId idPeriodo) {
+    private List<Necesidad> resolveNeeds(Presupuesto presupuesto, ObjectId idPeriodo) {
         Map<String, Necesidad> uniqueNeeds = new LinkedHashMap<>();
         List<Necesidad> candidates =
                 necesidadRepository.findByIdPresupuestoAndIdPeriodo(presupuesto.getId(), idPeriodo);
@@ -300,7 +314,7 @@ public class OptimizationService {
             if (need == null || need.getId() == null
                     || !presupuesto.getId().equals(need.getIdPresupuesto())
                     || !idPeriodo.equals(need.getIdPeriodo())
-                    || !idPerfil.equals(need.getIdPerfil())) {
+                    || !presupuesto.getIdPerfil().equals(need.getIdPerfil())) {
                 continue;
             }
             uniqueNeeds.putIfAbsent(need.getId().toHexString(), need);

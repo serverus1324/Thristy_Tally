@@ -2,6 +2,7 @@ package com.example.CalcGastosU.optimization;
 
 import com.example.CalcGastosU.optimization.controller.OptimizationController;
 import com.example.CalcGastosU.optimization.dto.OptimizationCategoryDTO;
+import com.example.CalcGastosU.optimization.dto.OptimizationPreloadResponseDTO;
 import com.example.CalcGastosU.optimization.dto.OptimizationRequestDTO;
 import com.example.CalcGastosU.optimization.dto.OptimizationResponseDTO;
 import com.example.CalcGastosU.optimization.exception.OptimizationException;
@@ -19,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -74,5 +76,30 @@ class OptimizationControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.status").value("PRESUPUESTO_INSUFICIENTE"));
+    }
+
+    @Test
+    void preloadAceptaElPresupuestoSeleccionado() throws Exception {
+        String idPeriodo = "6afa3a8016cd483d70c5c0bd";
+        String idPresupuesto = "6afa3a8216cd483d70c5c0be";
+        OptimizationPreloadResponseDTO response = new OptimizationPreloadResponseDTO();
+        response.setSuccess(true);
+        response.setCategorias(List.of());
+        when(optimizationService.preload(any(), any())).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/optimization/preload/{idPeriodo}", idPeriodo)
+                        .queryParam("idPresupuesto", idPresupuesto))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.categorias").isArray());
+    }
+
+    @Test
+    void preloadRechazaIdPresupuestoInvalido() throws Exception {
+        mockMvc.perform(get("/api/v1/optimization/preload/{idPeriodo}",
+                        "6afa3a8016cd483d70c5c0bd")
+                        .queryParam("idPresupuesto", "not-an-object-id"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
     }
 }
